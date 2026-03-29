@@ -17,16 +17,16 @@
         <nav class="top-nav">
             <div class="nav-container">
                 <a href="/" class="logo-link">
-                    <img src="/logo.png" alt="Национальный Банк Микронации" class="logo" id="siteLogo">
+                    <img src="/logo.png" alt="Национальный Банк Микронации" class="logo" id="siteLogo" onerror="this.style.display='none'">
                 </a>
-                <div class="nav-links">
-                    <a href="/" class="nav-link active">Главная</a>
-                    <a href="/profile.html" class="nav-link" style="display:none">Профиль</a>
-                    <a href="/cards.html" class="nav-link" style="display:none">Карты</a>
-                    <a href="/transfers.html" class="nav-link" style="display:none">Переводы</a>
-                    <a href="/loans.html" class="nav-link" style="display:none">Кредиты</a>
-                    <a href="/history.html" class="nav-link" style="display:none">История</a>
-                    <a href="/admin.html" class="nav-link" style="display:none">Администрирование</a>
+                <div class="nav-links" id="navLinks">
+                    <a href="/" class="nav-link active" data-page="home">Главная</a>
+                    <a href="/profile.html" class="nav-link" data-page="profile" style="display:none">Профиль</a>
+                    <a href="/cards.html" class="nav-link" data-page="cards" style="display:none">Карты</a>
+                    <a href="/transfers.html" class="nav-link" data-page="transfers" style="display:none">Переводы</a>
+                    <a href="/loans.html" class="nav-link" data-page="loans" style="display:none">Кредиты</a>
+                    <a href="/history.html" class="nav-link" data-page="history" style="display:none">История</a>
+                    <a href="/admin.html" class="nav-link" data-page="admin" style="display:none">Администрирование</a>
                 </div>
             </div>
         </nav>
@@ -126,8 +126,9 @@
                         <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
                         <p>Ваш баланс: <strong id="welcomeBalance">0.00</strong> кредитов</p>
                         <div class="welcome-actions">
-                            <button class="btn btn-primary" onclick="location.href='/transfers.html'">Перевести средства</button>
-                            <button class="btn btn-outline" onclick="location.href='/cards.html'">Мои карты</button>
+                            <button class="btn btn-primary" onclick="navigateTo('/transfers.html')">Перевести средства</button>
+                            <button class="btn btn-outline" onclick="navigateTo('/cards.html')">Мои карты</button>
+                            <button class="btn btn-outline" onclick="navigateTo('/profile.html')">Личный кабинет</button>
                         </div>
                     </div>
                 </div>
