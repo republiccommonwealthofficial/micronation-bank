@@ -21,12 +21,12 @@
                 </a>
                 <div class="nav-links">
                     <a href="/" class="nav-link active">Главная</a>
-                    <a href="/profile" class="nav-link" id="profileLink" style="display:none">Профиль</a>
-                    <a href="/cards" class="nav-link" id="cardsLink" style="display:none">Карты</a>
-                    <a href="/transfers" class="nav-link" id="transfersLink" style="display:none">Переводы</a>
-                    <a href="/loans" class="nav-link" id="loansLink" style="display:none">Кредиты</a>
-                    <a href="/history" class="nav-link" id="historyLink" style="display:none">История</a>
-                    <a href="/admin" class="nav-link" id="adminLink" style="display:none">Администрирование</a>
+                    <a href="/profile.html" class="nav-link" style="display:none">Профиль</a>
+                    <a href="/cards.html" class="nav-link" style="display:none">Карты</a>
+                    <a href="/transfers.html" class="nav-link" style="display:none">Переводы</a>
+                    <a href="/loans.html" class="nav-link" style="display:none">Кредиты</a>
+                    <a href="/history.html" class="nav-link" style="display:none">История</a>
+                    <a href="/admin.html" class="nav-link" style="display:none">Администрирование</a>
                 </div>
             </div>
         </nav>
@@ -56,13 +56,13 @@
                         <p>Льготные ставки для резидентов</p>
                     </div>
                     <div class="offer-card">
-                        <div class="offer-icon">🌍</div>
-                        <h3>Международные переводы</h3>
-                        <p>Доступ к мировой финансовой системе</p>
+                        <div class="offer-icon">🏦</div>
+                        <h3>Национальная валюта</h3>
+                        <p>Стабильная финансовая система микронации</p>
                     </div>
                 </div>
                 
-                <div class="auth-panel" id="authPanel">
+                <div id="authPanel" class="auth-panel">
                     <div class="auth-tabs">
                         <button class="auth-tab active" onclick="showAuthTab('login')">Вход</button>
                         <button class="auth-tab" onclick="showAuthTab('register')">Регистрация</button>
@@ -121,13 +121,13 @@
                     </div>
                 </div>
                 
-                <div class="welcome-panel" id="welcomePanel" style="display:none">
+                <div id="welcomePanel" class="welcome-panel" style="display:none">
                     <div class="welcome-card">
                         <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
                         <p>Ваш баланс: <strong id="welcomeBalance">0.00</strong> кредитов</p>
                         <div class="welcome-actions">
-                            <button class="btn btn-primary" onclick="location.href='/transfers'">Перевести средства</button>
-                            <button class="btn btn-outline" onclick="location.href='/cards'">Мои карты</button>
+                            <button class="btn btn-primary" onclick="location.href='/transfers.html'">Перевести средства</button>
+                            <button class="btn btn-outline" onclick="location.href='/cards.html'">Мои карты</button>
                         </div>
                     </div>
                 </div>
@@ -145,13 +145,6 @@
                 </div>
             </div>
         </footer>
-    </div>
-
-    <div id="cardModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeCardModal()">&times;</span>
-            <div id="cardModalContent"></div>
-        </div>
     </div>
 
     <div id="alertMessage" class="alert"></div>
