@@ -1014,3 +1014,179 @@ window.addEventListener('load', () => {
         }
     }, 800);
 });
+
+// Переключение между вкладками входа и регистрации
+window.switchAuthTab = function(tab) {
+    console.log('Переключение на вкладку:', tab);
+    
+    const loginContainer = document.getElementById('loginFormContainer');
+    const registerContainer = document.getElementById('registerFormContainer');
+    const tabs = document.querySelectorAll('.auth-tab-btn');
+    
+    if (tab === 'login') {
+        if (loginContainer) loginContainer.classList.add('active');
+        if (registerContainer) registerContainer.classList.remove('active');
+        if (tabs[0]) tabs[0].classList.add('active');
+        if (tabs[1]) tabs[1].classList.remove('active');
+    } else {
+        if (loginContainer) loginContainer.classList.remove('active');
+        if (registerContainer) registerContainer.classList.add('active');
+        if (tabs[0]) tabs[0].classList.remove('active');
+        if (tabs[1]) tabs[1].classList.add('active');
+    }
+};
+
+// Показать/скрыть пароль
+window.togglePassword = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        if (input.type === 'password') {
+            input.type = 'text';
+        } else {
+            input.type = 'password';
+        }
+    }
+};
+
+// Обновленная функция регистрации с проверкой согласия
+window.register = async function() {
+    console.log('Функция register вызвана');
+    
+    const agreeTerms = document.getElementById('agreeTerms');
+    if (!agreeTerms || !agreeTerms.checked) {
+        window.showAlert('Необходимо принять условия пользовательского соглашения');
+        return;
+    }
+    
+    const username = document.getElementById('regUsername')?.value.trim();
+    const password = document.getElementById('regPassword')?.value;
+    const full_name = document.getElementById('regFullName')?.value.trim();
+    const passport_series = document.getElementById('regPassportSeries')?.value.trim();
+    const passport_number = document.getElementById('regPassportNumber')?.value.trim();
+    const date_of_birth = document.getElementById('regDateOfBirth')?.value;
+    const place_of_birth = document.getElementById('regPlaceOfBirth')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
+    
+    console.log('Данные регистрации:', { username, full_name, passport_series, passport_number, date_of_birth, place_of_birth, email });
+    
+    if (!username || !password || !full_name || !passport_series || 
+        !passport_number || !date_of_birth || !place_of_birth || !email) {
+        window.showAlert('Заполните все обязательные поля');
+        return;
+    }
+    
+    if (username.length < 3) {
+        window.showAlert('Имя пользователя должно быть минимум 3 символа');
+        return;
+    }
+    
+    if (password.length < 6) {
+        window.showAlert('Пароль должен быть минимум 6 символов');
+        return;
+    }
+    
+    if (passport_series.length !== 4 || passport_number.length !== 8) {
+        window.showAlert('Неверный формат паспорта. Используйте: серия 4 цифры, номер 8 цифр');
+        return;
+    }
+    
+    // Проверка email на кириллицу
+    const cyrillicPattern = /[а-яА-ЯЁё]/;
+    if (cyrillicPattern.test(email)) {
+        window.showAlert('Email не должен содержать кириллицу');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username, password, full_name, passport_series, passport_number,
+                date_of_birth, place_of_birth, email
+            })
+        });
+        
+        const result = await response.json();
+        console.log('Результат регистрации:', result);
+        
+        if (result.success) {
+            window.showAlert('Регистрация успешна! Теперь войдите в систему.', 'success');
+            window.switchAuthTab('login');
+            // Очищаем форму
+            const inputs = document.querySelectorAll('#registerForm input');
+            inputs.forEach(input => {
+                if (input.type !== 'checkbox') input.value = '';
+            });
+            if (agreeTerms) agreeTerms.checked = false;
+        } else {
+            window.showAlert(result.message);
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        window.showAlert('Ошибка регистрации. Попробуйте позже.');
+    }
+};
+
+// Обновленная функция входа
+window.login = async function() {
+    console.log('Функция login вызвана');
+    
+    const username = document.getElementById('loginUsername')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+    const rememberMe = document.getElementById('rememberMe')?.checked;
+    
+    console.log('Попытка входа:', { username, rememberMe });
+    
+    if (!username || !password) {
+        window.showAlert('Введите имя пользователя и пароль');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, rememberMe })
+        });
+        
+        const data = await response.json();
+        console.log('Результат входа:', data);
+        
+        if (data.success) {
+            window.currentUser = data.user;
+            window.showAlert('Вход выполнен успешно!', 'success');
+            // Перезагружаем страницу для обновления состояния
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
+        } else {
+            window.showAlert(data.message);
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        window.showAlert('Ошибка входа. Попробуйте позже.');
+    }
+};
+
+// Инициализация обработчиков для вкладок
+document.addEventListener('DOMContentLoaded', () => {
+    // Обработчики для кнопок переключения вкладок
+    const tabBtns = document.querySelectorAll('.auth-tab-btn');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tab = btn.getAttribute('data-auth-tab');
+            if (tab) {
+                window.switchAuthTab(tab);
+            }
+        });
+    });
+    
+    // Автофокус на поле ввода при загрузке
+    const loginUsername = document.getElementById('loginUsername');
+    if (loginUsername) {
+        setTimeout(() => {
+            loginUsername.focus();
+        }, 100);
+    }
+});
