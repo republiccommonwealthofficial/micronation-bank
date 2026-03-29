@@ -64,8 +64,8 @@
                 
                 <div id="authPanel" class="auth-panel">
                     <div class="auth-tabs">
-                        <button class="auth-tab active" onclick="showAuthTab('login')">Вход</button>
-                        <button class="auth-tab" onclick="showAuthTab('register')">Регистрация</button>
+                        <button class="auth-tab active" onclick="window.showAuthTab('login')">Вход</button>
+                        <button class="auth-tab" onclick="window.showAuthTab('register')">Регистрация</button>
                     </div>
                     
                     <div id="loginForm" class="auth-form active">
@@ -77,7 +77,7 @@
                             <label>Пароль</label>
                             <input type="password" id="loginPassword" placeholder="Введите пароль">
                         </div>
-                        <button class="btn btn-primary" onclick="login()">Войти в систему</button>
+                        <button class="btn btn-primary" onclick="window.login()">Войти в систему</button>
                     </div>
                     
                     <div id="registerForm" class="auth-form">
@@ -117,7 +117,7 @@
                             <label>Электронная почта</label>
                             <input type="email" id="regEmail" placeholder="email@example.com">
                         </div>
-                        <button class="btn btn-primary" onclick="register()">Зарегистрироваться</button>
+                        <button class="btn btn-primary" onclick="window.register()">Зарегистрироваться</button>
                     </div>
                 </div>
                 
@@ -126,9 +126,9 @@
                         <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
                         <p>Ваш баланс: <strong id="welcomeBalance">0.00</strong> кредитов</p>
                         <div class="welcome-actions">
-                            <button class="btn btn-primary" onclick="navigateTo('/transfers.html')">Перевести средства</button>
-                            <button class="btn btn-outline" onclick="navigateTo('/cards.html')">Мои карты</button>
-                            <button class="btn btn-outline" onclick="navigateTo('/profile.html')">Личный кабинет</button>
+                            <button class="btn btn-primary" onclick="window.navigateTo('/transfers.html')">Перевести средства</button>
+                            <button class="btn btn-outline" onclick="window.navigateTo('/cards.html')">Мои карты</button>
+                            <button class="btn btn-outline" onclick="window.navigateTo('/profile.html')">Личный кабинет</button>
                         </div>
                     </div>
                 </div>
@@ -138,8 +138,8 @@
         <footer class="footer">
             <div class="footer-container">
                 <div class="footer-links">
-                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
-                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
+                    <button class="footer-btn" onclick="window.openSupport()">Техническая поддержка</button>
+                    <button class="footer-btn" onclick="window.openFAQ()">FAQ</button>
                 </div>
                 <div class="footer-copyright">
                     © 2024 Национальный Банк Микронации. Все права защищены.
