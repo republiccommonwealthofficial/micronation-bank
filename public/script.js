@@ -1,6 +1,11 @@
 let currentUser = null;
 let pendingTransactionId = null;
 
+// Функция навигации
+function navigateTo(url) {
+    window.location.href = url;
+}
+
 // Проверка авторизации при загрузке
 document.addEventListener('DOMContentLoaded', async () => {
     // Адаптация логотипа
@@ -12,6 +17,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     await checkSession();
+    
+    // Обработка кликов по навигации
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = link.getAttribute('href');
+            if (href && href !== '#') {
+                window.location.href = href;
+            }
+        });
+    });
 });
 
 // Проверка сессии
@@ -58,7 +75,7 @@ function updateUIForLoggedInUser() {
         loadUserBalance();
     }
     
-    // Показываем ссылки для авторизованных
+    // Показываем все ссылки навигации
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
@@ -69,7 +86,7 @@ function updateUIForLoggedInUser() {
     
     // Показываем админ ссылку если нужно
     if (currentUser.is_admin) {
-        const adminLink = document.querySelector('.nav-link[href="/admin"]');
+        const adminLink = document.querySelector('.nav-link[href="/admin.html"]');
         if (adminLink) adminLink.style.display = 'inline-block';
     }
 }
@@ -92,17 +109,17 @@ async function loadUserBalance() {
 async function loadPageData() {
     const path = window.location.pathname;
     
-    if (path === '/profile' || path === '/profile.html') {
+    if (path === '/profile.html') {
         await loadProfileData();
-    } else if (path === '/cards' || path === '/cards.html') {
+    } else if (path === '/cards.html') {
         await loadCardsData();
-    } else if (path === '/transfers' || path === '/transfers.html') {
+    } else if (path === '/transfers.html') {
         await loadTransfersData();
-    } else if (path === '/history' || path === '/history.html') {
+    } else if (path === '/history.html') {
         await loadFullHistory();
-    } else if (path === '/loans' || path === '/loans.html') {
+    } else if (path === '/loans.html') {
         await loadLoansData();
-    } else if (path === '/admin' || path === '/admin.html') {
+    } else if (path === '/admin.html') {
         if (currentUser?.is_admin) {
             await loadAdminData();
         } else {
