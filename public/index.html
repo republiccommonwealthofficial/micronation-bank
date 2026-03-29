@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 
-                <!-- НОВОЕ ОКНО ВХОДА/РЕГИСТРАЦИИ -->
+                <!-- ОКНО ВХОДА/РЕГИСТРАЦИИ (БЕЗ СМАЙЛИКОВ) -->
                 <div id="authPanel" class="auth-panel">
                     <div class="auth-card">
                         <div class="auth-header">
@@ -72,21 +72,19 @@
                         
                         <!-- Форма входа -->
                         <div id="loginFormContainer" class="auth-form-container active">
-                            <form id="loginForm" onsubmit="event.preventDefault(); window.login();">
+                            <form id="loginFormElement" onsubmit="event.preventDefault(); window.login();">
                                 <div class="form-group">
                                     <label for="loginUsername">Имя пользователя</label>
                                     <div class="input-wrapper">
-                                        <span class="input-icon">👤</span>
-                                        <input type="text" id="loginUsername" name="username" placeholder="Введите ваш логин" autocomplete="username">
+                                        <input type="text" id="loginUsername" placeholder="Введите ваш логин" autocomplete="username">
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="loginPassword">Пароль</label>
                                     <div class="input-wrapper">
-                                        <span class="input-icon">🔒</span>
-                                        <input type="password" id="loginPassword" name="password" placeholder="Введите пароль" autocomplete="current-password">
-                                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                                        <input type="password" id="loginPassword" placeholder="Введите пароль" autocomplete="current-password">
+                                        <button type="button" class="password-toggle" onclick="window.togglePassword('loginPassword')">👁</button>
                                     </div>
                                 </div>
                                 
@@ -105,23 +103,21 @@
                             </form>
                         </div>
                         
-                        <!-- Форма регистрации -->
+                        <!-- Форма регистрации (БЕЗ СМАЙЛИКОВ И БЕЗ МЕСТА РОЖДЕНИЯ) -->
                         <div id="registerFormContainer" class="auth-form-container">
-                            <form id="registerForm" onsubmit="event.preventDefault(); window.register();">
+                            <form id="registerFormElement" onsubmit="event.preventDefault(); window.register();">
                                 <div class="form-row-2">
                                     <div class="form-group">
                                         <label for="regUsername">Имя пользователя *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">👤</span>
                                             <input type="text" id="regUsername" placeholder="минимум 3 символа">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="regPassword">Пароль *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">🔒</span>
                                             <input type="password" id="regPassword" placeholder="минимум 6 символов">
-                                            <button type="button" class="password-toggle" onclick="togglePassword('regPassword')">👁️</button>
+                                            <button type="button" class="password-toggle" onclick="window.togglePassword('regPassword')">👁</button>
                                         </div>
                                     </div>
                                 </div>
@@ -129,7 +125,6 @@
                                 <div class="form-group">
                                     <label for="regFullName">Полное имя (как в паспорте) *</label>
                                     <div class="input-wrapper">
-                                        <span class="input-icon">📄</span>
                                         <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
                                     </div>
                                 </div>
@@ -138,14 +133,12 @@
                                     <div class="form-group">
                                         <label for="regPassportSeries">Серия паспорта *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">🪪</span>
                                             <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4" pattern="\d{4}">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="regPassportNumber">Номер паспорта *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">🪪</span>
                                             <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8" pattern="\d{8}">
                                         </div>
                                     </div>
@@ -155,31 +148,20 @@
                                     <div class="form-group">
                                         <label for="regDateOfBirth">Дата рождения *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">📅</span>
                                             <input type="date" id="regDateOfBirth">
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="regPlaceOfBirth">Место рождения *</label>
+                                        <label for="regEmail">Электронная почта *</label>
                                         <div class="input-wrapper">
-                                            <span class="input-icon">📍</span>
-                                            <input type="text" id="regPlaceOfBirth" placeholder="Город, страна">
+                                            <input type="email" id="regEmail" placeholder="example@domain.com">
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="regEmail">Электронная почта *</label>
-                                    <div class="input-wrapper">
-                                        <span class="input-icon">✉️</span>
-                                        <input type="email" id="regEmail" placeholder="example@domain.com">
-                                    </div>
-                                    <small class="form-hint">Только латиница, без кириллицы</small>
-                                </div>
-                                
-                                <div class="form-group">
                                     <label class="checkbox-label">
-                                        <input type="checkbox" id="agreeTerms" required> Я принимаю условия 
+                                        <input type="checkbox" id="agreeTerms"> Я принимаю условия 
                                         <a href="#" onclick="window.showAlert('Пользовательское соглашение будет доступно в ближайшее время', 'info'); return false;">пользовательского соглашения</a>
                                     </label>
                                 </div>
@@ -196,7 +178,7 @@
                 
                 <div id="welcomePanel" class="welcome-panel" style="display:none">
                     <div class="welcome-card">
-                        <div class="welcome-icon">🏛️</div>
+                        <div class="welcome-icon">🏛</div>
                         <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
                         <p>Ваш текущий баланс</p>
                         <div class="welcome-balance">
