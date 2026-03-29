@@ -3,15 +3,15 @@ let pendingTransactionId = null;
 
 // Проверка авторизации при загрузке
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkSession();
-    
     // Адаптация логотипа
-    const logo = document.getElementById('siteLogo');
+    const logo = document.querySelector('.logo');
     if (logo) {
         logo.style.maxWidth = '200px';
         logo.style.height = 'auto';
         logo.style.width = 'auto';
     }
+    
+    await checkSession();
 });
 
 // Проверка сессии
@@ -23,7 +23,19 @@ async function checkSession() {
         if (data.success) {
             currentUser = data.user;
             updateUIForLoggedInUser();
-            loadPageData();
+            
+            // Если мы на главной, загружаем данные
+            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                loadUserBalance();
+            } else {
+                // На других страницах загружаем соответствующие данные
+                loadPageData();
+            }
+        } else {
+            // Если не авторизован и не на главной - перенаправляем на главную
+            if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+                window.location.href = '/';
+            }
         }
     } catch (error) {
         console.error('Session check error:', error);
@@ -32,25 +44,32 @@ async function checkSession() {
 
 // Обновление UI для авторизованного пользователя
 function updateUIForLoggedInUser() {
+    // Скрываем форму авторизации на главной
     const authPanel = document.getElementById('authPanel');
     const welcomePanel = document.getElementById('welcomePanel');
     
     if (authPanel) authPanel.style.display = 'none';
     if (welcomePanel) {
         welcomePanel.style.display = 'block';
-        document.getElementById('welcomeName').textContent = currentUser.full_name.split(' ')[0];
+        const welcomeNameSpan = document.getElementById('welcomeName');
+        if (welcomeNameSpan) {
+            welcomeNameSpan.textContent = currentUser.full_name.split(' ')[0];
+        }
         loadUserBalance();
     }
     
     // Показываем ссылки для авторизованных
-    const links = ['profileLink', 'cardsLink', 'transfersLink', 'loansLink', 'historyLink'];
-    links.forEach(linkId => {
-        const link = document.getElementById(linkId);
-        if (link) link.style.display = 'inline-block';
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href && href !== '/' && href !== '/index.html') {
+            link.style.display = 'inline-block';
+        }
     });
     
+    // Показываем админ ссылку если нужно
     if (currentUser.is_admin) {
-        const adminLink = document.getElementById('adminLink');
+        const adminLink = document.querySelector('.nav-link[href="/admin"]');
         if (adminLink) adminLink.style.display = 'inline-block';
     }
 }
@@ -81,6 +100,8 @@ async function loadPageData() {
         await loadTransfersData();
     } else if (path === '/history' || path === '/history.html') {
         await loadFullHistory();
+    } else if (path === '/loans' || path === '/loans.html') {
+        await loadLoansData();
     } else if (path === '/admin' || path === '/admin.html') {
         if (currentUser?.is_admin) {
             await loadAdminData();
@@ -97,16 +118,57 @@ async function loadProfileData() {
         const data = await response.json();
         
         if (data.success) {
-            document.getElementById('userId').textContent = data.user.id;
-            document.getElementById('fullName').textContent = data.user.full_name;
-            document.getElementById('passport').textContent = `${data.user.passport_series}-${data.user.passport_number}`;
-            document.getElementById('birthDate').textContent = new Date(data.user.date_of_birth).toLocaleDateString('ru-RU');
-            document.getElementById('birthPlace').textContent = data.user.place_of_birth;
-            document.getElementById('email').textContent = data.user.email;
-            document.getElementById('createdAt').textContent = new Date(data.user.created_at).toLocaleDateString('ru-RU');
+            const userIdSpan = document.getElementById('userId');
+            if (userIdSpan) userIdSpan.textContent = data.user.id;
+            
+            const fullNameSpan = document.getElementById('fullName');
+            if (fullNameSpan) fullNameSpan.textContent = data.user.full_name;
+            
+            const passportSpan = document.getElementById('passport');
+            if (passportSpan) passportSpan.textContent = `${data.user.passport_series}-${data.user.passport_number}`;
+            
+            const birthDateSpan = document.getElementById('birthDate');
+            if (birthDateSpan) birthDateSpan.textContent = new Date(data.user.date_of_birth).toLocaleDateString('ru-RU');
+            
+            const birthPlaceSpan = document.getElementById('birthPlace');
+            if (birthPlaceSpan) birthPlaceSpan.textContent = data.user.place_of_birth;
+            
+            const emailSpan = document.getElementById('email');
+            if (emailSpan) emailSpan.textContent = data.user.email;
+            
+            const createdAtSpan = document.getElementById('createdAt');
+            if (createdAtSpan) createdAtSpan.textContent = new Date(data.user.created_at).toLocaleDateString('ru-RU');
         }
     } catch (error) {
         console.error('Error loading profile:', error);
+    }
+}
+
+// Загрузка данных кредитов
+async function loadLoansData() {
+    try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        
+        if (data.success) {
+            const loanInfoDiv = document.getElementById('activeLoanInfo');
+            if (loanInfoDiv) {
+                if (data.activeLoan && data.activeLoan.is_active === 1) {
+                    loanInfoDiv.innerHTML = `
+                        <div class="loan-status">
+                            <strong>Активный кредит</strong><br>
+                            Сумма долга: ${data.activeLoan.debt_amount.toFixed(2)} кредитов<br>
+                            Ежемесячный платеж: ${data.activeLoan.monthly_payment?.toFixed(2) || '0.00'}<br>
+                            Дата выдачи: ${new Date(data.activeLoan.created_at).toLocaleDateString('ru-RU')}
+                        </div>
+                    `;
+                } else {
+                    loanInfoDiv.innerHTML = '<div class="loan-status">Нет активных кредитов</div>';
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading loans:', error);
     }
 }
 
@@ -150,45 +212,48 @@ async function showCardDetails(cardId) {
         
         if (data.success) {
             const modalContent = document.getElementById('cardModalContent');
-            modalContent.innerHTML = `
-                <h3>Детали карты</h3>
-                <div class="info-item">
-                    <span class="info-label">Номер карты</span>
-                    <span class="info-value">${data.card.card_number}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Держатель</span>
-                    <span class="info-value">${data.card.card_holder}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Срок действия</span>
-                    <span class="info-value">${data.card.expiry_date}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">CVV</span>
-                    <span class="info-value">${data.card.cvv}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Статус</span>
-                    <span class="info-value ${data.card.is_blocked ? 'status-blocked' : 'status-active'}">
-                        ${data.card.is_blocked ? 'Заблокирована' : 'Активна'}
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Дата выпуска</span>
-                    <span class="info-value">${new Date(data.card.created_at).toLocaleDateString('ru-RU')}</span>
-                </div>
-                <div class="actions" style="margin-top: 20px;">
-                    <button class="btn ${data.card.is_blocked ? 'btn-primary' : 'btn-danger'}" 
-                            onclick="toggleCardBlock(${cardId}, ${!data.card.is_blocked})">
-                        ${data.card.is_blocked ? 'Разблокировать карту' : 'Заблокировать карту'}
-                    </button>
-                </div>
-            `;
-            document.getElementById('cardModal').style.display = 'flex';
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <h3>Детали карты</h3>
+                    <div class="info-item">
+                        <span class="info-label">Номер карты</span>
+                        <span class="info-value">${data.card.card_number}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Держатель</span>
+                        <span class="info-value">${data.card.card_holder}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Срок действия</span>
+                        <span class="info-value">${data.card.expiry_date}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">CVV</span>
+                        <span class="info-value">${data.card.cvv}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Статус</span>
+                        <span class="info-value ${data.card.is_blocked ? 'status-blocked' : 'status-active'}">
+                            ${data.card.is_blocked ? 'Заблокирована' : 'Активна'}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Дата выпуска</span>
+                        <span class="info-value">${new Date(data.card.created_at).toLocaleDateString('ru-RU')}</span>
+                    </div>
+                    <div class="actions" style="margin-top: 20px;">
+                        <button class="btn ${data.card.is_blocked ? 'btn-primary' : 'btn-danger'}" 
+                                onclick="toggleCardBlock(${cardId}, ${!data.card.is_blocked})">
+                            ${data.card.is_blocked ? 'Разблокировать карту' : 'Заблокировать карту'}
+                        </button>
+                    </div>
+                `;
+                document.getElementById('cardModal').style.display = 'flex';
+            }
         }
     } catch (error) {
         console.error('Error loading card details:', error);
+        showAlert('Ошибка при загрузке данных карты');
     }
 }
 
@@ -330,19 +395,21 @@ async function loadFullHistory() {
 // Открыть модальное окно отмены
 function openCancellationModal(transactionId) {
     pendingTransactionId = transactionId;
-    document.getElementById('cancellationModal').style.display = 'flex';
+    const modal = document.getElementById('cancellationModal');
+    if (modal) modal.style.display = 'flex';
 }
 
 // Закрыть модальное окно отмены
 function closeCancellationModal() {
     pendingTransactionId = null;
-    document.getElementById('cancellationModal').style.display = 'none';
+    const modal = document.getElementById('cancellationModal');
+    if (modal) modal.style.display = 'none';
 }
 
 // Отправить заявку на отмену
 async function submitCancellationRequest() {
-    const reason = document.getElementById('cancellationReason').value;
-    const comment = document.getElementById('cancellationComment').value;
+    const reason = document.getElementById('cancellationReason')?.value;
+    const comment = document.getElementById('cancellationComment')?.value;
     
     if (!reason) {
         showAlert('Выберите причину отмены');
@@ -365,7 +432,9 @@ async function submitCancellationRequest() {
         if (data.success) {
             showAlert('Заявка на отмену отправлена на рассмотрение', 'success');
             closeCancellationModal();
-            loadRecentTransactions();
+            if (window.location.pathname.includes('transfers')) {
+                loadRecentTransactions();
+            }
             if (window.location.pathname.includes('history')) {
                 loadFullHistory();
             }
@@ -379,9 +448,9 @@ async function submitCancellationRequest() {
 
 // Выполнить перевод
 async function makeTransfer() {
-    const to_user_id = document.getElementById('recipientSelect').value;
-    const amount = parseFloat(document.getElementById('transferAmount').value);
-    const description = document.getElementById('transferDescription').value;
+    const to_user_id = document.getElementById('recipientSelect')?.value;
+    const amount = parseFloat(document.getElementById('transferAmount')?.value);
+    const description = document.getElementById('transferDescription')?.value;
     
     if (!to_user_id) {
         showAlert('Выберите получателя');
@@ -407,8 +476,10 @@ async function makeTransfer() {
         if (data.success) {
             showAlert('Перевод выполнен успешно', 'success');
             loadTransfersData();
-            document.getElementById('transferAmount').value = '';
-            document.getElementById('transferDescription').value = '';
+            const amountInput = document.getElementById('transferAmount');
+            const descInput = document.getElementById('transferDescription');
+            if (amountInput) amountInput.value = '';
+            if (descInput) descInput.value = '';
         } else {
             showAlert(data.message);
         }
@@ -434,6 +505,62 @@ async function createNewCard() {
         }
     } catch (error) {
         showAlert('Ошибка при создании карты');
+    }
+}
+
+// Подать заявку на кредит
+async function submitLoanApplication() {
+    const amount = parseFloat(document.getElementById('loanAmount')?.value);
+    const purpose = document.getElementById('loanPurpose')?.value;
+    
+    if (!amount || amount <= 0 || amount > 10000) {
+        showAlert('Сумма кредита должна быть от 1 до 10,000');
+        return;
+    }
+    if (!purpose) {
+        showAlert('Укажите цель получения кредита');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/loan-application', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount, purpose })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showAlert('Заявка на кредит отправлена на рассмотрение', 'success');
+            const amountInput = document.getElementById('loanAmount');
+            const purposeInput = document.getElementById('loanPurpose');
+            if (amountInput) amountInput.value = '';
+            if (purposeInput) purposeInput.value = '';
+        } else {
+            showAlert(data.message);
+        }
+    } catch (error) {
+        showAlert('Ошибка при отправке заявки');
+    }
+}
+
+// Погасить кредит
+async function repayLoan() {
+    try {
+        const response = await fetch('/api/repay-loan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showAlert('Кредит погашен', 'success');
+            loadLoansData();
+        } else {
+            showAlert(data.message);
+        }
+    } catch (error) {
+        showAlert('Ошибка при погашении кредита');
     }
 }
 
@@ -631,8 +758,8 @@ async function toggleUserFreeze(userId, freeze) {
 
 // Админ: начислить деньги
 async function adminAddMoney() {
-    const userId = document.getElementById('adminUserId').value;
-    const amount = parseFloat(document.getElementById('adminAmount').value);
+    const userId = document.getElementById('adminUserId')?.value;
+    const amount = parseFloat(document.getElementById('adminAmount')?.value);
     
     if (!userId || !amount || amount <= 0) {
         showAlert('Укажите ID пользователя и сумму');
@@ -649,8 +776,10 @@ async function adminAddMoney() {
         const data = await response.json();
         if (data.success) {
             showAlert('Средства начислены', 'success');
-            document.getElementById('adminUserId').value = '';
-            document.getElementById('adminAmount').value = '';
+            const userIdInput = document.getElementById('adminUserId');
+            const amountInput = document.getElementById('adminAmount');
+            if (userIdInput) userIdInput.value = '';
+            if (amountInput) amountInput.value = '';
             loadAdminData();
         } else {
             showAlert(data.message);
@@ -662,41 +791,39 @@ async function adminAddMoney() {
 
 // Регистрация
 async function register() {
-    const data = {
-        username: document.getElementById('regUsername')?.value.trim(),
-        password: document.getElementById('regPassword')?.value,
-        full_name: document.getElementById('regFullName')?.value.trim(),
-        passport_series: document.getElementById('regPassportSeries')?.value.trim(),
-        passport_number: document.getElementById('regPassportNumber')?.value.trim(),
-        date_of_birth: document.getElementById('regDateOfBirth')?.value,
-        place_of_birth: document.getElementById('regPlaceOfBirth')?.value.trim(),
-        email: document.getElementById('regEmail')?.value.trim()
-    };
+    const username = document.getElementById('regUsername')?.value.trim();
+    const password = document.getElementById('regPassword')?.value;
+    const full_name = document.getElementById('regFullName')?.value.trim();
+    const passport_series = document.getElementById('regPassportSeries')?.value.trim();
+    const passport_number = document.getElementById('regPassportNumber')?.value.trim();
+    const date_of_birth = document.getElementById('regDateOfBirth')?.value;
+    const place_of_birth = document.getElementById('regPlaceOfBirth')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
     
-    if (!data.username || !data.password || !data.full_name || !data.passport_series || 
-        !data.passport_number || !data.date_of_birth || !data.place_of_birth || !data.email) {
+    if (!username || !password || !full_name || !passport_series || 
+        !passport_number || !date_of_birth || !place_of_birth || !email) {
         showAlert('Заполните все поля');
         return;
     }
     
-    if (data.username.length < 3) {
+    if (username.length < 3) {
         showAlert('Имя пользователя должно быть минимум 3 символа');
         return;
     }
     
-    if (data.password.length < 6) {
+    if (password.length < 6) {
         showAlert('Пароль должен быть минимум 6 символов');
         return;
     }
     
-    if (data.passport_series.length !== 4 || data.passport_number.length !== 8) {
-        showAlert('Неверный формат паспорта');
+    if (passport_series.length !== 4 || passport_number.length !== 8) {
+        showAlert('Неверный формат паспорта. Используйте: серия 4 цифры, номер 8 цифр');
         return;
     }
     
     // Проверка email на кириллицу
     const cyrillicPattern = /[а-яА-ЯЁё]/;
-    if (cyrillicPattern.test(data.email)) {
+    if (cyrillicPattern.test(email)) {
         showAlert('Email не должен содержать кириллицу');
         return;
     }
@@ -705,18 +832,25 @@ async function register() {
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({
+                username, password, full_name, passport_series, passport_number,
+                date_of_birth, place_of_birth, email
+            })
         });
         
         const result = await response.json();
         if (result.success) {
             showAlert('Регистрация успешна! Теперь войдите в систему.', 'success');
             showAuthTab('login');
+            // Очищаем форму
+            const inputs = document.querySelectorAll('#registerForm input');
+            inputs.forEach(input => input.value = '');
         } else {
             showAlert(result.message);
         }
     } catch (error) {
-        showAlert('Ошибка регистрации');
+        console.error('Registration error:', error);
+        showAlert('Ошибка регистрации. Попробуйте позже.');
     }
 }
 
@@ -740,13 +874,14 @@ async function login() {
         const data = await response.json();
         if (data.success) {
             currentUser = data.user;
-            updateUIForLoggedInUser();
+            // Перезагружаем страницу для обновления состояния
             window.location.href = '/';
         } else {
             showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка входа');
+        console.error('Login error:', error);
+        showAlert('Ошибка входа. Попробуйте позже.');
     }
 }
 
@@ -768,15 +903,15 @@ function showAuthTab(tab) {
     const tabs = document.querySelectorAll('.auth-tab');
     
     if (tab === 'login') {
-        loginForm.classList.add('active');
-        registerForm.classList.remove('active');
-        tabs[0].classList.add('active');
-        tabs[1].classList.remove('active');
+        if (loginForm) loginForm.classList.add('active');
+        if (registerForm) registerForm.classList.remove('active');
+        if (tabs[0]) tabs[0].classList.add('active');
+        if (tabs[1]) tabs[1].classList.remove('active');
     } else {
-        loginForm.classList.remove('active');
-        registerForm.classList.add('active');
-        tabs[0].classList.remove('active');
-        tabs[1].classList.add('active');
+        if (loginForm) loginForm.classList.remove('active');
+        if (registerForm) registerForm.classList.add('active');
+        if (tabs[0]) tabs[0].classList.remove('active');
+        if (tabs[1]) tabs[1].classList.add('active');
     }
 }
 
@@ -793,17 +928,22 @@ function openFAQ() {
 // Показать уведомление
 function showAlert(message, type = 'error') {
     const alertDiv = document.getElementById('alertMessage');
-    alertDiv.textContent = message;
-    alertDiv.className = `alert ${type}`;
-    alertDiv.style.display = 'block';
-    setTimeout(() => {
-        alertDiv.style.display = 'none';
-    }, 3000);
+    if (alertDiv) {
+        alertDiv.textContent = message;
+        alertDiv.className = `alert ${type}`;
+        alertDiv.style.display = 'block';
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 3000);
+    } else {
+        console.log(`${type}: ${message}`);
+    }
 }
 
 // Закрыть модальное окно карты
 function closeCardModal() {
-    document.getElementById('cardModal').style.display = 'none';
+    const modal = document.getElementById('cardModal');
+    if (modal) modal.style.display = 'none';
 }
 
 // Анимация загрузки
@@ -818,5 +958,5 @@ window.addEventListener('load', () => {
                 if (app) app.style.display = 'block';
             }, 500);
         }
-    }, 1000);
+    }, 800);
 });
