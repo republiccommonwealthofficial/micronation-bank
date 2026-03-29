@@ -1,13 +1,16 @@
-let currentUser = null;
-let pendingTransactionId = null;
+// Глобальные переменные
+window.currentUser = null;
+window.pendingTransactionId = null;
 
 // Функция навигации
-function navigateTo(url) {
+window.navigateTo = function(url) {
     window.location.href = url;
-}
+};
 
 // Проверка авторизации при загрузке
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM загружен');
+    
     // Адаптация логотипа
     const logo = document.querySelector('.logo');
     if (logo) {
@@ -16,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         logo.style.width = 'auto';
     }
     
-    await checkSession();
+    await window.checkSession();
     
     // Обработка кликов по навигации
     const navLinks = document.querySelectorAll('.nav-link');
@@ -32,23 +35,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Проверка сессии
-async function checkSession() {
+window.checkSession = async function() {
     try {
+        console.log('Проверка сессии...');
         const response = await fetch('/api/check-session');
         const data = await response.json();
         
         if (data.success) {
-            currentUser = data.user;
-            updateUIForLoggedInUser();
+            console.log('Пользователь авторизован:', data.user);
+            window.currentUser = data.user;
+            window.updateUIForLoggedInUser();
             
             // Если мы на главной, загружаем данные
             if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-                loadUserBalance();
+                window.loadUserBalance();
             } else {
-                // На других страницах загружаем соответствующие данные
-                loadPageData();
+                window.loadPageData();
             }
         } else {
+            console.log('Пользователь не авторизован');
             // Если не авторизован и не на главной - перенаправляем на главную
             if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
                 window.location.href = '/';
@@ -57,22 +62,28 @@ async function checkSession() {
     } catch (error) {
         console.error('Session check error:', error);
     }
-}
+};
 
 // Обновление UI для авторизованного пользователя
-function updateUIForLoggedInUser() {
+window.updateUIForLoggedInUser = function() {
+    console.log('Обновление UI для авторизованного пользователя');
+    
     // Скрываем форму авторизации на главной
     const authPanel = document.getElementById('authPanel');
     const welcomePanel = document.getElementById('welcomePanel');
     
-    if (authPanel) authPanel.style.display = 'none';
+    if (authPanel) {
+        authPanel.style.display = 'none';
+        console.log('Форма авторизации скрыта');
+    }
     if (welcomePanel) {
         welcomePanel.style.display = 'block';
         const welcomeNameSpan = document.getElementById('welcomeName');
-        if (welcomeNameSpan) {
-            welcomeNameSpan.textContent = currentUser.full_name.split(' ')[0];
+        if (welcomeNameSpan && window.currentUser) {
+            welcomeNameSpan.textContent = window.currentUser.full_name.split(' ')[0];
         }
-        loadUserBalance();
+        window.loadUserBalance();
+        console.log('Панель приветствия показана');
     }
     
     // Показываем все ссылки навигации
@@ -85,51 +96,56 @@ function updateUIForLoggedInUser() {
     });
     
     // Показываем админ ссылку если нужно
-    if (currentUser.is_admin) {
+    if (window.currentUser && window.currentUser.is_admin) {
         const adminLink = document.querySelector('.nav-link[href="/admin.html"]');
         if (adminLink) adminLink.style.display = 'inline-block';
+        console.log('Админ панель показана');
     }
-}
+};
 
 // Загрузка баланса для приветствия
-async function loadUserBalance() {
+window.loadUserBalance = async function() {
     try {
         const response = await fetch('/api/user');
         const data = await response.json();
         if (data.success) {
             const welcomeBalance = document.getElementById('welcomeBalance');
-            if (welcomeBalance) welcomeBalance.textContent = data.user.balance.toFixed(2);
+            if (welcomeBalance) {
+                welcomeBalance.textContent = data.user.balance.toFixed(2);
+            }
+            console.log('Баланс загружен:', data.user.balance);
         }
     } catch (error) {
         console.error('Error loading balance:', error);
     }
-}
+};
 
 // Загрузка данных страницы
-async function loadPageData() {
+window.loadPageData = async function() {
     const path = window.location.pathname;
+    console.log('Загрузка данных для страницы:', path);
     
     if (path === '/profile.html') {
-        await loadProfileData();
+        await window.loadProfileData();
     } else if (path === '/cards.html') {
-        await loadCardsData();
+        await window.loadCardsData();
     } else if (path === '/transfers.html') {
-        await loadTransfersData();
+        await window.loadTransfersData();
     } else if (path === '/history.html') {
-        await loadFullHistory();
+        await window.loadFullHistory();
     } else if (path === '/loans.html') {
-        await loadLoansData();
+        await window.loadLoansData();
     } else if (path === '/admin.html') {
-        if (currentUser?.is_admin) {
-            await loadAdminData();
+        if (window.currentUser?.is_admin) {
+            await window.loadAdminData();
         } else {
             window.location.href = '/';
         }
     }
-}
+};
 
 // Загрузка данных профиля
-async function loadProfileData() {
+window.loadProfileData = async function() {
     try {
         const response = await fetch('/api/user');
         const data = await response.json();
@@ -159,10 +175,10 @@ async function loadProfileData() {
     } catch (error) {
         console.error('Error loading profile:', error);
     }
-}
+};
 
 // Загрузка данных кредитов
-async function loadLoansData() {
+window.loadLoansData = async function() {
     try {
         const response = await fetch('/api/user');
         const data = await response.json();
@@ -187,10 +203,10 @@ async function loadLoansData() {
     } catch (error) {
         console.error('Error loading loans:', error);
     }
-}
+};
 
 // Загрузка данных карт
-async function loadCardsData() {
+window.loadCardsData = async function() {
     try {
         const response = await fetch('/api/user');
         const data = await response.json();
@@ -202,7 +218,7 @@ async function loadCardsData() {
             cardsGrid.innerHTML = '<div class="card-item">У вас нет активных карт. Выпустите новую карту.</div>';
         } else {
             cardsGrid.innerHTML = data.cards.map(card => `
-                <div class="card-item ${card.is_blocked ? 'blocked' : ''}" onclick="showCardDetails(${card.id})">
+                <div class="card-item ${card.is_blocked ? 'blocked' : ''}" onclick="window.showCardDetails(${card.id})">
                     <div class="card-number">${card.card_number}</div>
                     <div class="card-details">
                         <span>${card.card_holder}</span>
@@ -219,10 +235,10 @@ async function loadCardsData() {
     } catch (error) {
         console.error('Error loading cards:', error);
     }
-}
+};
 
 // Показать детали карты в модальном окне
-async function showCardDetails(cardId) {
+window.showCardDetails = async function(cardId) {
     try {
         const response = await fetch(`/api/card/${cardId}`);
         const data = await response.json();
@@ -260,7 +276,7 @@ async function showCardDetails(cardId) {
                     </div>
                     <div class="actions" style="margin-top: 20px;">
                         <button class="btn ${data.card.is_blocked ? 'btn-primary' : 'btn-danger'}" 
-                                onclick="toggleCardBlock(${cardId}, ${!data.card.is_blocked})">
+                                onclick="window.toggleCardBlock(${cardId}, ${!data.card.is_blocked})">
                             ${data.card.is_blocked ? 'Разблокировать карту' : 'Заблокировать карту'}
                         </button>
                     </div>
@@ -270,12 +286,12 @@ async function showCardDetails(cardId) {
         }
     } catch (error) {
         console.error('Error loading card details:', error);
-        showAlert('Ошибка при загрузке данных карты');
+        window.showAlert('Ошибка при загрузке данных карты');
     }
-}
+};
 
 // Блокировка/разблокировка карты
-async function toggleCardBlock(cardId, block) {
+window.toggleCardBlock = async function(cardId, block) {
     const action = block ? 'block' : 'unblock';
     try {
         const response = await fetch('/api/toggle-card-block', {
@@ -286,19 +302,19 @@ async function toggleCardBlock(cardId, block) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert(data.message, 'success');
-            closeCardModal();
-            loadCardsData();
+            window.showAlert(data.message, 'success');
+            window.closeCardModal();
+            window.loadCardsData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при изменении статуса карты');
+        window.showAlert('Ошибка при изменении статуса карты');
     }
-}
+};
 
 // Загрузка данных переводов
-async function loadTransfersData() {
+window.loadTransfersData = async function() {
     try {
         // Загрузка баланса
         const userResponse = await fetch('/api/user');
@@ -323,14 +339,14 @@ async function loadTransfersData() {
         }
         
         // Загрузка последних транзакций
-        await loadRecentTransactions();
+        await window.loadRecentTransactions();
     } catch (error) {
         console.error('Error loading transfers data:', error);
     }
-}
+};
 
 // Загрузка последних транзакций
-async function loadRecentTransactions() {
+window.loadRecentTransactions = async function() {
     try {
         const response = await fetch('/api/transactions?limit=10');
         const transactions = await response.json();
@@ -341,7 +357,7 @@ async function loadRecentTransactions() {
                 container.innerHTML = '<div class="transaction-item">Нет операций</div>';
             } else {
                 container.innerHTML = transactions.map(t => {
-                    const isIncome = t.to_user_id === currentUser?.id;
+                    const isIncome = t.to_user_id === window.currentUser?.id;
                     const isCancelled = t.status === 'cancelled';
                     return `
                         <div class="transaction-item">
@@ -355,7 +371,7 @@ async function loadRecentTransactions() {
                             </div>
                             ${!isIncome && t.status !== 'cancelled' && !t.cancellation_status ? `
                                 <div class="transaction-actions">
-                                    <button class="cancel-btn" onclick="openCancellationModal(${t.id})">Отменить</button>
+                                    <button class="cancel-btn" onclick="window.openCancellationModal(${t.id})">Отменить</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -366,10 +382,10 @@ async function loadRecentTransactions() {
     } catch (error) {
         console.error('Error loading transactions:', error);
     }
-}
+};
 
 // Загрузка полной истории
-async function loadFullHistory() {
+window.loadFullHistory = async function() {
     try {
         const response = await fetch('/api/transactions?limit=100');
         const transactions = await response.json();
@@ -380,7 +396,7 @@ async function loadFullHistory() {
                 container.innerHTML = '<div class="transaction-item">История операций пуста</div>';
             } else {
                 container.innerHTML = transactions.map(t => {
-                    const isIncome = t.to_user_id === currentUser?.id;
+                    const isIncome = t.to_user_id === window.currentUser?.id;
                     const isCancelled = t.status === 'cancelled';
                     return `
                         <div class="transaction-item">
@@ -396,7 +412,7 @@ async function loadFullHistory() {
                             </div>
                             ${!isIncome && t.status !== 'cancelled' && !t.cancellation_status ? `
                                 <div class="transaction-actions">
-                                    <button class="cancel-btn" onclick="openCancellationModal(${t.id})">Отменить</button>
+                                    <button class="cancel-btn" onclick="window.openCancellationModal(${t.id})">Отменить</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -407,29 +423,29 @@ async function loadFullHistory() {
     } catch (error) {
         console.error('Error loading history:', error);
     }
-}
+};
 
 // Открыть модальное окно отмены
-function openCancellationModal(transactionId) {
-    pendingTransactionId = transactionId;
+window.openCancellationModal = function(transactionId) {
+    window.pendingTransactionId = transactionId;
     const modal = document.getElementById('cancellationModal');
     if (modal) modal.style.display = 'flex';
-}
+};
 
 // Закрыть модальное окно отмены
-function closeCancellationModal() {
-    pendingTransactionId = null;
+window.closeCancellationModal = function() {
+    window.pendingTransactionId = null;
     const modal = document.getElementById('cancellationModal');
     if (modal) modal.style.display = 'none';
-}
+};
 
 // Отправить заявку на отмену
-async function submitCancellationRequest() {
+window.submitCancellationRequest = async function() {
     const reason = document.getElementById('cancellationReason')?.value;
     const comment = document.getElementById('cancellationComment')?.value;
     
     if (!reason) {
-        showAlert('Выберите причину отмены');
+        window.showAlert('Выберите причину отмены');
         return;
     }
     
@@ -440,41 +456,41 @@ async function submitCancellationRequest() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                transaction_id: pendingTransactionId,
+                transaction_id: window.pendingTransactionId,
                 reason: fullReason
             })
         });
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Заявка на отмену отправлена на рассмотрение', 'success');
-            closeCancellationModal();
+            window.showAlert('Заявка на отмену отправлена на рассмотрение', 'success');
+            window.closeCancellationModal();
             if (window.location.pathname.includes('transfers')) {
-                loadRecentTransactions();
+                window.loadRecentTransactions();
             }
             if (window.location.pathname.includes('history')) {
-                loadFullHistory();
+                window.loadFullHistory();
             }
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при отправке заявки');
+        window.showAlert('Ошибка при отправке заявки');
     }
-}
+};
 
 // Выполнить перевод
-async function makeTransfer() {
+window.makeTransfer = async function() {
     const to_user_id = document.getElementById('recipientSelect')?.value;
     const amount = parseFloat(document.getElementById('transferAmount')?.value);
     const description = document.getElementById('transferDescription')?.value;
     
     if (!to_user_id) {
-        showAlert('Выберите получателя');
+        window.showAlert('Выберите получателя');
         return;
     }
     if (!amount || amount <= 0) {
-        showAlert('Введите сумму перевода');
+        window.showAlert('Введите сумму перевода');
         return;
     }
     
@@ -491,22 +507,22 @@ async function makeTransfer() {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Перевод выполнен успешно', 'success');
-            loadTransfersData();
+            window.showAlert('Перевод выполнен успешно', 'success');
+            window.loadTransfersData();
             const amountInput = document.getElementById('transferAmount');
             const descInput = document.getElementById('transferDescription');
             if (amountInput) amountInput.value = '';
             if (descInput) descInput.value = '';
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при выполнении перевода');
+        window.showAlert('Ошибка при выполнении перевода');
     }
-}
+};
 
 // Создать новую карту
-async function createNewCard() {
+window.createNewCard = async function() {
     try {
         const response = await fetch('/api/create-card', {
             method: 'POST',
@@ -515,27 +531,27 @@ async function createNewCard() {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Новая карта успешно выпущена', 'success');
-            loadCardsData();
+            window.showAlert('Новая карта успешно выпущена', 'success');
+            window.loadCardsData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при создании карты');
+        window.showAlert('Ошибка при создании карты');
     }
-}
+};
 
 // Подать заявку на кредит
-async function submitLoanApplication() {
+window.submitLoanApplication = async function() {
     const amount = parseFloat(document.getElementById('loanAmount')?.value);
     const purpose = document.getElementById('loanPurpose')?.value;
     
     if (!amount || amount <= 0 || amount > 10000) {
-        showAlert('Сумма кредита должна быть от 1 до 10,000');
+        window.showAlert('Сумма кредита должна быть от 1 до 10,000');
         return;
     }
     if (!purpose) {
-        showAlert('Укажите цель получения кредита');
+        window.showAlert('Укажите цель получения кредита');
         return;
     }
     
@@ -548,21 +564,21 @@ async function submitLoanApplication() {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Заявка на кредит отправлена на рассмотрение', 'success');
+            window.showAlert('Заявка на кредит отправлена на рассмотрение', 'success');
             const amountInput = document.getElementById('loanAmount');
             const purposeInput = document.getElementById('loanPurpose');
             if (amountInput) amountInput.value = '';
             if (purposeInput) purposeInput.value = '';
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при отправке заявки');
+        window.showAlert('Ошибка при отправке заявки');
     }
-}
+};
 
 // Погасить кредит
-async function repayLoan() {
+window.repayLoan = async function() {
     try {
         const response = await fetch('/api/repay-loan', {
             method: 'POST',
@@ -571,19 +587,19 @@ async function repayLoan() {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Кредит погашен', 'success');
-            loadLoansData();
+            window.showAlert('Кредит погашен', 'success');
+            window.loadLoansData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при погашении кредита');
+        window.showAlert('Ошибка при погашении кредита');
     }
-}
+};
 
 // Загрузка админ панели
-async function loadAdminData() {
-    if (!currentUser?.is_admin) return;
+window.loadAdminData = async function() {
+    if (!window.currentUser?.is_admin) return;
     
     try {
         // Загрузка кредитных заявок
@@ -602,8 +618,8 @@ async function loadAdminData() {
                         <div>Цель: ${app.purpose || 'Не указана'}</div>
                         <div>Дата: ${new Date(app.created_at).toLocaleString('ru-RU')}</div>
                         <div class="actions">
-                            <button class="btn btn-primary small" onclick="approveLoan(${app.id})">Одобрить</button>
-                            <button class="btn btn-outline small" onclick="rejectLoan(${app.id})">Отклонить</button>
+                            <button class="btn btn-primary small" onclick="window.approveLoan(${app.id})">Одобрить</button>
+                            <button class="btn btn-outline small" onclick="window.rejectLoan(${app.id})">Отклонить</button>
                         </div>
                     </div>
                 `).join('');
@@ -627,8 +643,8 @@ async function loadAdminData() {
                         <div><strong>Причина:</strong> ${req.reason}</div>
                         <div><strong>Дата транзакции:</strong> ${new Date(req.transaction_date).toLocaleString('ru-RU')}</div>
                         <div class="actions">
-                            <button class="btn btn-primary small" onclick="approveCancellation(${req.id})">Одобрить</button>
-                            <button class="btn btn-outline small" onclick="rejectCancellation(${req.id})">Отклонить</button>
+                            <button class="btn btn-primary small" onclick="window.approveCancellation(${req.id})">Одобрить</button>
+                            <button class="btn btn-outline small" onclick="window.rejectCancellation(${req.id})">Отклонить</button>
                         </div>
                     </div>
                 `).join('');
@@ -649,7 +665,7 @@ async function loadAdminData() {
                     <div>Дата регистрации: ${new Date(user.created_at).toLocaleDateString('ru-RU')}</div>
                     <div class="actions">
                         <button class="btn ${user.is_frozen ? 'btn-primary' : 'btn-danger'} small" 
-                                onclick="toggleUserFreeze(${user.id}, ${!user.is_frozen})">
+                                onclick="window.toggleUserFreeze(${user.id}, ${!user.is_frozen})">
                             ${user.is_frozen ? 'Разморозить' : 'Заморозить'}
                         </button>
                     </div>
@@ -659,10 +675,10 @@ async function loadAdminData() {
     } catch (error) {
         console.error('Error loading admin data:', error);
     }
-}
+};
 
 // Админ: одобрить кредит
-async function approveLoan(applicationId) {
+window.approveLoan = async function(applicationId) {
     try {
         const response = await fetch('/api/admin/approve-loan', {
             method: 'POST',
@@ -672,18 +688,18 @@ async function approveLoan(applicationId) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Кредит одобрен', 'success');
-            loadAdminData();
+            window.showAlert('Кредит одобрен', 'success');
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при одобрении кредита');
+        window.showAlert('Ошибка при одобрении кредита');
     }
-}
+};
 
 // Админ: отклонить кредит
-async function rejectLoan(applicationId) {
+window.rejectLoan = async function(applicationId) {
     const comment = prompt('Укажите причину отказа:');
     if (comment === null) return;
     
@@ -696,18 +712,18 @@ async function rejectLoan(applicationId) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Заявка отклонена', 'success');
-            loadAdminData();
+            window.showAlert('Заявка отклонена', 'success');
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при отклонении заявки');
+        window.showAlert('Ошибка при отклонении заявки');
     }
-}
+};
 
 // Админ: одобрить отмену
-async function approveCancellation(requestId) {
+window.approveCancellation = async function(requestId) {
     try {
         const response = await fetch('/api/admin/approve-cancellation', {
             method: 'POST',
@@ -717,18 +733,18 @@ async function approveCancellation(requestId) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Транзакция отменена', 'success');
-            loadAdminData();
+            window.showAlert('Транзакция отменена', 'success');
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при отмене транзакции');
+        window.showAlert('Ошибка при отмене транзакции');
     }
-}
+};
 
 // Админ: отклонить отмену
-async function rejectCancellation(requestId) {
+window.rejectCancellation = async function(requestId) {
     const comment = prompt('Укажите причину отказа:');
     if (comment === null) return;
     
@@ -741,18 +757,18 @@ async function rejectCancellation(requestId) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Заявка отклонена', 'success');
-            loadAdminData();
+            window.showAlert('Заявка отклонена', 'success');
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при отклонении заявки');
+        window.showAlert('Ошибка при отклонении заявки');
     }
-}
+};
 
 // Админ: заморозить/разморозить пользователя
-async function toggleUserFreeze(userId, freeze) {
+window.toggleUserFreeze = async function(userId, freeze) {
     const action = freeze ? 'freeze' : 'unfreeze';
     try {
         const response = await fetch('/api/admin/toggle-user-freeze', {
@@ -763,23 +779,23 @@ async function toggleUserFreeze(userId, freeze) {
         
         const data = await response.json();
         if (data.success) {
-            showAlert(data.message, 'success');
-            loadAdminData();
+            window.showAlert(data.message, 'success');
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при изменении статуса пользователя');
+        window.showAlert('Ошибка при изменении статуса пользователя');
     }
-}
+};
 
 // Админ: начислить деньги
-async function adminAddMoney() {
+window.adminAddMoney = async function() {
     const userId = document.getElementById('adminUserId')?.value;
     const amount = parseFloat(document.getElementById('adminAmount')?.value);
     
     if (!userId || !amount || amount <= 0) {
-        showAlert('Укажите ID пользователя и сумму');
+        window.showAlert('Укажите ID пользователя и сумму');
         return;
     }
     
@@ -792,22 +808,24 @@ async function adminAddMoney() {
         
         const data = await response.json();
         if (data.success) {
-            showAlert('Средства начислены', 'success');
+            window.showAlert('Средства начислены', 'success');
             const userIdInput = document.getElementById('adminUserId');
             const amountInput = document.getElementById('adminAmount');
             if (userIdInput) userIdInput.value = '';
             if (amountInput) amountInput.value = '';
-            loadAdminData();
+            window.loadAdminData();
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
-        showAlert('Ошибка при начислении средств');
+        window.showAlert('Ошибка при начислении средств');
     }
-}
+};
 
 // Регистрация
-async function register() {
+window.register = async function() {
+    console.log('Функция register вызвана');
+    
     const username = document.getElementById('regUsername')?.value.trim();
     const password = document.getElementById('regPassword')?.value;
     const full_name = document.getElementById('regFullName')?.value.trim();
@@ -817,31 +835,33 @@ async function register() {
     const place_of_birth = document.getElementById('regPlaceOfBirth')?.value.trim();
     const email = document.getElementById('regEmail')?.value.trim();
     
+    console.log('Данные регистрации:', { username, full_name, passport_series, passport_number, date_of_birth, place_of_birth, email });
+    
     if (!username || !password || !full_name || !passport_series || 
         !passport_number || !date_of_birth || !place_of_birth || !email) {
-        showAlert('Заполните все поля');
+        window.showAlert('Заполните все поля');
         return;
     }
     
     if (username.length < 3) {
-        showAlert('Имя пользователя должно быть минимум 3 символа');
+        window.showAlert('Имя пользователя должно быть минимум 3 символа');
         return;
     }
     
     if (password.length < 6) {
-        showAlert('Пароль должен быть минимум 6 символов');
+        window.showAlert('Пароль должен быть минимум 6 символов');
         return;
     }
     
     if (passport_series.length !== 4 || passport_number.length !== 8) {
-        showAlert('Неверный формат паспорта. Используйте: серия 4 цифры, номер 8 цифр');
+        window.showAlert('Неверный формат паспорта. Используйте: серия 4 цифры, номер 8 цифр');
         return;
     }
     
     // Проверка email на кириллицу
     const cyrillicPattern = /[а-яА-ЯЁё]/;
     if (cyrillicPattern.test(email)) {
-        showAlert('Email не должен содержать кириллицу');
+        window.showAlert('Email не должен содержать кириллицу');
         return;
     }
     
@@ -856,28 +876,34 @@ async function register() {
         });
         
         const result = await response.json();
+        console.log('Результат регистрации:', result);
+        
         if (result.success) {
-            showAlert('Регистрация успешна! Теперь войдите в систему.', 'success');
-            showAuthTab('login');
+            window.showAlert('Регистрация успешна! Теперь войдите в систему.', 'success');
+            window.showAuthTab('login');
             // Очищаем форму
             const inputs = document.querySelectorAll('#registerForm input');
             inputs.forEach(input => input.value = '');
         } else {
-            showAlert(result.message);
+            window.showAlert(result.message);
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showAlert('Ошибка регистрации. Попробуйте позже.');
+        window.showAlert('Ошибка регистрации. Попробуйте позже.');
     }
-}
+};
 
 // Вход
-async function login() {
+window.login = async function() {
+    console.log('Функция login вызвана');
+    
     const username = document.getElementById('loginUsername')?.value;
     const password = document.getElementById('loginPassword')?.value;
     
+    console.log('Попытка входа:', { username });
+    
     if (!username || !password) {
-        showAlert('Введите имя пользователя и пароль');
+        window.showAlert('Введите имя пользователя и пароль');
         return;
     }
     
@@ -889,32 +915,39 @@ async function login() {
         });
         
         const data = await response.json();
+        console.log('Результат входа:', data);
+        
         if (data.success) {
-            currentUser = data.user;
+            window.currentUser = data.user;
+            window.showAlert('Вход выполнен успешно!', 'success');
             // Перезагружаем страницу для обновления состояния
-            window.location.href = '/';
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
         } else {
-            showAlert(data.message);
+            window.showAlert(data.message);
         }
     } catch (error) {
         console.error('Login error:', error);
-        showAlert('Ошибка входа. Попробуйте позже.');
+        window.showAlert('Ошибка входа. Попробуйте позже.');
     }
-}
+};
 
 // Выход
-async function logout() {
+window.logout = async function() {
     try {
         await fetch('/api/logout', { method: 'POST' });
-        currentUser = null;
+        window.currentUser = null;
         window.location.href = '/';
     } catch (error) {
-        showAlert('Ошибка выхода');
+        window.showAlert('Ошибка выхода');
     }
-}
+};
 
 // Показать вкладку авторизации
-function showAuthTab(tab) {
+window.showAuthTab = function(tab) {
+    console.log('Переключение на вкладку:', tab);
+    
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const tabs = document.querySelectorAll('.auth-tab');
@@ -930,20 +963,22 @@ function showAuthTab(tab) {
         if (tabs[0]) tabs[0].classList.remove('active');
         if (tabs[1]) tabs[1].classList.add('active');
     }
-}
+};
 
 // Открыть поддержку
-function openSupport() {
+window.openSupport = function() {
     window.location.href = 'mailto:republiccommfinance@gmail.com?subject=Запрос в техническую поддержку&body=Уважаемая служба поддержки,';
-}
+};
 
 // Открыть FAQ
-function openFAQ() {
-    showAlert('FAQ: Для получения справки обратитесь в службу поддержки по электронной почте republiccommfinance@gmail.com', 'success');
-}
+window.openFAQ = function() {
+    window.showAlert('FAQ: Для получения справки обратитесь в службу поддержки по электронной почте republiccommfinance@gmail.com', 'success');
+};
 
 // Показать уведомление
-function showAlert(message, type = 'error') {
+window.showAlert = function(message, type = 'error') {
+    console.log('Alert:', type, message);
+    
     const alertDiv = document.getElementById('alertMessage');
     if (alertDiv) {
         alertDiv.textContent = message;
@@ -953,18 +988,19 @@ function showAlert(message, type = 'error') {
             alertDiv.style.display = 'none';
         }, 3000);
     } else {
-        console.log(`${type}: ${message}`);
+        alert(`${type.toUpperCase()}: ${message}`);
     }
-}
+};
 
 // Закрыть модальное окно карты
-function closeCardModal() {
+window.closeCardModal = function() {
     const modal = document.getElementById('cardModal');
     if (modal) modal.style.display = 'none';
-}
+};
 
 // Анимация загрузки
 window.addEventListener('load', () => {
+    console.log('Страница загружена');
     setTimeout(() => {
         const loader = document.getElementById('loader');
         if (loader) {
@@ -973,6 +1009,7 @@ window.addEventListener('load', () => {
                 loader.style.display = 'none';
                 const app = document.getElementById('app');
                 if (app) app.style.display = 'block';
+                console.log('Приложение отображено');
             }, 500);
         }
     }, 800);
