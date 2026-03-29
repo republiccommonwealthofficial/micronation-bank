@@ -62,69 +62,147 @@
                     </div>
                 </div>
                 
+                <!-- НОВОЕ ОКНО ВХОДА/РЕГИСТРАЦИИ -->
                 <div id="authPanel" class="auth-panel">
-                    <div class="auth-tabs">
-                        <button class="auth-tab active" onclick="window.showAuthTab('login')">Вход</button>
-                        <button class="auth-tab" onclick="window.showAuthTab('register')">Регистрация</button>
-                    </div>
-                    
-                    <div id="loginForm" class="auth-form active">
-                        <div class="input-group">
-                            <label>Имя пользователя</label>
-                            <input type="text" id="loginUsername" placeholder="Введите логин">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <button class="auth-tab-btn active" data-auth-tab="login">Вход в систему</button>
+                            <button class="auth-tab-btn" data-auth-tab="register">Регистрация</button>
                         </div>
-                        <div class="input-group">
-                            <label>Пароль</label>
-                            <input type="password" id="loginPassword" placeholder="Введите пароль">
+                        
+                        <!-- Форма входа -->
+                        <div id="loginFormContainer" class="auth-form-container active">
+                            <form id="loginForm" onsubmit="event.preventDefault(); window.login();">
+                                <div class="form-group">
+                                    <label for="loginUsername">Имя пользователя</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">👤</span>
+                                        <input type="text" id="loginUsername" name="username" placeholder="Введите ваш логин" autocomplete="username">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="loginPassword">Пароль</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">🔒</span>
+                                        <input type="password" id="loginPassword" name="password" placeholder="Введите пароль" autocomplete="current-password">
+                                        <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')">👁️</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-options">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="rememberMe"> Запомнить меня
+                                    </label>
+                                    <a href="#" class="forgot-link" onclick="window.showAlert('Функция восстановления пароля будет доступна в ближайшее время. Обратитесь в службу поддержки.', 'info'); return false;">Забыли пароль?</a>
+                                </div>
+                                
+                                <button type="submit" class="auth-submit-btn">Войти в систему</button>
+                                
+                                <div class="auth-footer">
+                                    <p>Нет учетной записи? <a href="#" onclick="window.switchAuthTab('register'); return false;">Зарегистрироваться</a></p>
+                                </div>
+                            </form>
                         </div>
-                        <button class="btn btn-primary" onclick="window.login()">Войти в систему</button>
-                    </div>
-                    
-                    <div id="registerForm" class="auth-form">
-                        <div class="input-group">
-                            <label>Имя пользователя</label>
-                            <input type="text" id="regUsername" placeholder="минимум 3 символа">
+                        
+                        <!-- Форма регистрации -->
+                        <div id="registerFormContainer" class="auth-form-container">
+                            <form id="registerForm" onsubmit="event.preventDefault(); window.register();">
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="regUsername">Имя пользователя *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">👤</span>
+                                            <input type="text" id="regUsername" placeholder="минимум 3 символа">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="regPassword">Пароль *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">🔒</span>
+                                            <input type="password" id="regPassword" placeholder="минимум 6 символов">
+                                            <button type="button" class="password-toggle" onclick="togglePassword('regPassword')">👁️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="regFullName">Полное имя (как в паспорте) *</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">📄</span>
+                                        <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="regPassportSeries">Серия паспорта *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">🪪</span>
+                                            <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4" pattern="\d{4}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="regPassportNumber">Номер паспорта *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">🪪</span>
+                                            <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8" pattern="\d{8}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="regDateOfBirth">Дата рождения *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">📅</span>
+                                            <input type="date" id="regDateOfBirth">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="regPlaceOfBirth">Место рождения *</label>
+                                        <div class="input-wrapper">
+                                            <span class="input-icon">📍</span>
+                                            <input type="text" id="regPlaceOfBirth" placeholder="Город, страна">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="regEmail">Электронная почта *</label>
+                                    <div class="input-wrapper">
+                                        <span class="input-icon">✉️</span>
+                                        <input type="email" id="regEmail" placeholder="example@domain.com">
+                                    </div>
+                                    <small class="form-hint">Только латиница, без кириллицы</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="agreeTerms" required> Я принимаю условия 
+                                        <a href="#" onclick="window.showAlert('Пользовательское соглашение будет доступно в ближайшее время', 'info'); return false;">пользовательского соглашения</a>
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" class="auth-submit-btn">Зарегистрироваться</button>
+                                
+                                <div class="auth-footer">
+                                    <p>Уже есть аккаунт? <a href="#" onclick="window.switchAuthTab('login'); return false;">Войти в систему</a></p>
+                                </div>
+                            </form>
                         </div>
-                        <div class="input-group">
-                            <label>Пароль</label>
-                            <input type="password" id="regPassword" placeholder="минимум 6 символов">
-                        </div>
-                        <div class="input-group">
-                            <label>Полное имя</label>
-                            <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
-                        </div>
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label>Серия паспорта</label>
-                                <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4">
-                            </div>
-                            <div class="input-group">
-                                <label>Номер паспорта</label>
-                                <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="input-group">
-                                <label>Дата рождения</label>
-                                <input type="date" id="regDateOfBirth">
-                            </div>
-                            <div class="input-group">
-                                <label>Место рождения</label>
-                                <input type="text" id="regPlaceOfBirth" placeholder="Город, страна">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label>Электронная почта</label>
-                            <input type="email" id="regEmail" placeholder="email@example.com">
-                        </div>
-                        <button class="btn btn-primary" onclick="window.register()">Зарегистрироваться</button>
                     </div>
                 </div>
                 
                 <div id="welcomePanel" class="welcome-panel" style="display:none">
                     <div class="welcome-card">
+                        <div class="welcome-icon">🏛️</div>
                         <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
-                        <p>Ваш баланс: <strong id="welcomeBalance">0.00</strong> кредитов</p>
+                        <p>Ваш текущий баланс</p>
+                        <div class="welcome-balance">
+                            <span id="welcomeBalance">0.00</span>
+                            <span class="currency">кредитов</span>
+                        </div>
                         <div class="welcome-actions">
                             <button class="btn btn-primary" onclick="window.navigateTo('/transfers.html')">Перевести средства</button>
                             <button class="btn btn-outline" onclick="window.navigateTo('/cards.html')">Мои карты</button>
