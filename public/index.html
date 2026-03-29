@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Онлайн Банк Микронации</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        /* Стили для авторизации */
+        .auth-card {
+            background: white;
+            border-radius: 30px;
+            padding: 35px 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .auth-card h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.3s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            cursor: pointer;
+        }
+
+        /* Стили для основного приложения */
+        .bank-app {
+            display: none;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .user-name {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .balance {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .balance-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .card-item.blocked {
+            border-left-color: #e74c3c;
+            opacity: 0.7;
+        }
+
+        .transaction-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .transaction-income {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .transaction-outcome {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .user-list-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .user-list-item:hover {
+            background: #f0f0f0;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 50px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert.error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+
+        .alert.success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .admin-badge {
+            background: gold;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .logout-btn {
+            margin-top: 20px;
+            background: #95a5a6;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .balance {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Форма авторизации/регистрации -->
+        <div id="authSection">
+            <div class="auth-card" id="loginCard">
+                <h2>🏦 Вход в банк</h2>
+                <div class="input-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="loginUsername" placeholder="Введите username">
+                </div>
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="Введите пароль">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Войти</button>
+                <div class="switch-link" onclick="showRegister()">Нет аккаунта? Зарегистрироваться</div>
+            </div>
+
+            <div class="auth-card" id="registerCard" style="display:none">
+                <h2>📝 Регистрация</h2>
+                <div class="input-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="regUsername" placeholder="От 3 символов">
+                </div>
+                <div class="input-group">
+                    <label>Пароль</label>
+                    <input type="password" id="regPassword" placeholder="От 3 символов">
+                </div>
+                <div class="input-group">
+                    <label>Ваше полное имя</label>
+                    <input type="text" id="regFullName" placeholder="Как к вам обращаться">
+                </div>
+                <button class="btn btn-primary" onclick="register()">Зарегистрироваться</button>
+                <div class="switch-link" onclick="showLogin()">Уже есть аккаунт? Войти</div>
+            </div>
+        </div>
+
+        <!-- Основное приложение банка -->
+        <div id="bankSection" class="bank-app">
+            <div class="header-card">
+                <div class="user-name" id="userFullName"></div>
+                <div class="balance" id="userBalance">0</div>
+                <div class="balance-label">⭐ Кредиты микронации</div>
+                <div style="font-size: 12px; color: #888; margin-top: 8px;" id="userIdDisplay"></div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('transfer')">💸 Переводы</button>
+                <button class="tab" onclick="switchTab('cards')">💳 Карты</button>
+                <button class="tab" onclick="switchTab('loans')">📊 Кредиты</button>
+                <button class="tab" onclick="switchTab('history')">📜 История</button>
+                <button class="tab" id="adminTabBtn" style="display:none" onclick="switchTab('admin')">⚙️ Админ</button>
+            </div>
+
+            <!-- Вкладка переводов -->
+            <div id="transferTab" class="tab-content active">
+                <h3>💸 Сделать перевод</h3>
+                <select id="recipientSelect">
+                    <option value="">Выберите получателя</option>
+                </select>
+                <input type="number" id="transferAmount" placeholder="Сумма перевода">
+                <button class="btn btn-primary" onclick="makeTransfer()">Отправить перевод</button>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <h4>👥 Все пользователи (ID)</h4>
+                    <div id="usersList" style="max-height: 250px; overflow-y: auto;"></div>
+                </div>
+            </div>
+
+            <!-- Вкладка карт -->
+            <div id="cardsTab" class="tab-content">
+                <button class="btn btn-success" onclick="createNewCard()">➕ Создать новую карту</button>
+                <div id="cardsList" style="margin-top: 20px;"></div>
+            </div>
+
+            <!-- Вкладка кредитов -->
+            <div id="loansTab" class="tab-content">
+                <div class="info-box">
+                    <p>💰 Максимальная сумма: <strong>10,000 ⭐</strong></p>
+                    <p>📈 Процентная ставка: <strong>10%</strong></p>
+                    <p>💡 Вернуть нужно в 1.1 раза больше</p>
+                </div>
+                <input type="number" id="loanAmount" placeholder="Сумма кредита (1-10000)">
+                <button class="btn btn-warning" onclick="takeLoan()">🏦 Взять кредит</button>
+                <button class="btn btn-danger" onclick="repayLoan()">💰 Погасить кредит</button>
+                <div id="loanInfo" class="info-box" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- Вкладка истории -->
+            <div id="historyTab" class="tab-content">
+                <h3>📜 История операций</h3>
+                <div id="transactionsList"></div>
+            </div>
+
+            <!-- Вкладка админа -->
+            <div id="adminTab" class="tab-content">
+                <h3>⚙️ Панель администратора</h3>
+                <div class="info-box">
+                    <p>🔑 Вы вошли как администратор</p>
+                </div>
+                
+                <h4>💰 Начисление денег</h4>
+                <select id="adminUserSelect">
+                    <option value="">Выберите пользователя</option>
+                </select>
+                <input type="number" id="adminAmount" placeholder="Сумма начисления">
+                <button class="btn btn-primary" onclick="adminAddMoney()">Начислить</button>
+                
+                <h4 style="margin-top: 20px;">💳 Управление картами</h4>
+                <div id="adminCardsList"></div>
+            </div>
+
+            <button class="btn logout-btn" onclick="logout()">🚪 Выйти из аккаунта</button>
+        </div>
+    </div>
+
+    <div id="alertMessage" class="alert"></div>
+
+    <script>
+        let currentUser = null;
+        let allUsers = [];
+
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${type}`;
+            alertDiv.style.display = 'block';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function showRegister() {
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('registerCard').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('loginCard').style.display = 'block';
+            document.getElementById('registerCard').style.display = 'none';
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const full_name = document.getElementById('regFullName').value.trim();
+
+            if (!username || !password || !full_name) {
+                showAlert('Заполните все поля');
+                return;
+            }
+
+            if (username.length < 3) {
+                showAlert('Имя пользователя должно быть минимум 3 символа');
+                return;
+            }
+
+            if (password.length < 3) {
+                showAlert('Пароль должен быть минимум 3 символа');
+                return;
+            }
+
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, full_name })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showAlert(data.message, 'success');
+                showLogin();
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regFullName').value = '';
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showAlert('Введите username и пароль');
+                return;
+            }
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('bankSection').style.display = 'block';
+                
+                // Показываем админ-панель для пользователя с ID 1
+                if (currentUser.id === 1) {
+                    document.getElementById('adminTabBtn').style.display = 'block';
+                }
+                
+                loadUserData();
+                loadAllUsers();
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        async function loadUserData() {
+            const response = await fetch(`/api/user/${currentUser.id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                currentUser = { ...currentUser, ...data.user };
+                document.getElementById('userFullName').innerHTML = data.user.full_name + (currentUser.id === 1 ? '<span class="admin-badge">Админ</span>' : '');
+                document.getElementById('userBalance').textContent = data.user.balance.toFixed(2);
+                document.getElementById('userIdDisplay').textContent = `Ваш ID: ${currentUser.id}`;
+                
+                // Загружаем карты
+                const cardsList = document.getElementById('cardsList');
+                if (!data.cards || data.cards.length === 0) {
+                    cardsList.innerHTML = '<p>У вас нет карт. Создайте карту для переводов.</p>';
+                } else {
+                    cardsList.innerHTML = data.cards.map(card => `
+                        <div class="card-item ${card.is_blocked ? 'blocked' : ''}">
+                            💳 Карта #${card.card_number}<br>
+                            Статус: ${card.is_blocked ? '🔴 Заблокирована' : '🟢 Активна'}<br>
+                            <small>Создана: ${new Date(card.created_at).toLocaleDateString()}</small>
+                        </div>
+                    `).join('');
+                }
+                
+                // Загружаем кредитную информацию
+                const loanInfo = document.getElementById('loanInfo');
+                if (data.activeLoan && data.activeLoan.is_active === 1) {
+                    loanInfo.innerHTML = `
+                        <strong>⚠️ АКТИВНЫЙ КРЕДИТ</strong><br>
+                        Сумма долга: ${data.activeLoan.debt_amount.toFixed(2)} ⭐<br>
+                        Взято: ${data.activeLoan.amount.toFixed(2)} ⭐<br>
+                        Проценты: ${(data.activeLoan.interest_rate * 100)}%<br>
+                        Дата выдачи: ${new Date(data.activeLoan.created_at).toLocaleDateString()}
+                    `;
+                } else {
+                    loanInfo.innerHTML = '<strong>✅ Нет активных кредитов</strong>';
+                }
+                
+                // Загружаем историю
+                loadTransactions();
+            }
+        }
+
+        async function loadTransactions() {
+            const response = await fetch(`/api/transactions/${currentUser.id}`);
+            const transactions = await response.json();
+            
+            const transactionsList = document.getElementById('transactionsList');
+            if (transactions.length === 0) {
+                transactionsList.innerHTML = '<p>История операций пуста</p>';
+            } else {
+                transactionsList.innerHTML = transactions.map(t => {
+                    const isIncome = t.to_user_id === currentUser.id;
+                    const amount = t.amount.toFixed(2);
+                    return `
+                        <div class="transaction-item">
+                            ${isIncome ? '📥 Получено от' : '📤 Отправлено для'} <strong>${isIncome ? t.from_name : t.to_name}</strong><br>
+                            <span class="${isIncome ? 'transaction-income' : 'transaction-outcome'}">${isIncome ? '+' : '-'} ${amount} ⭐</span><br>
+                            <small>${new Date(t.created_at).toLocaleString()}</small>
+                            ${t.description ? `<br><small>${t.description}</small>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function loadAllUsers() {
+            const response = await fetch('/api/users');
+            allUsers = await response.json();
+            
+            const recipientSelect = document.getElementById('recipientSelect');
+            const usersList = document.getElementById('usersList');
+            const adminUserSelect = document.getElementById('adminUserSelect');
+            
+            recipientSelect.innerHTML = '<option value="">Выберите получателя</option>' + 
+                allUsers.filter(u => u.id !== currentUser.id).map(u => `<option value="${u.id}">${u.full_name} (@${u.username}) - Баланс: ${u.balance.toFixed(2)} ⭐</option>`).join('');
+            
+            usersList.innerHTML = allUsers.map(u => `
+                <div class="user-list-item" onclick="selectRecipient(${u.id})">
+                    <strong>ID: ${u.id}</strong> - ${u.full_name} (@${u.username})<br>
+                    <small>💰 Баланс: ${u.balance.toFixed(2)} ⭐</small>
+                </div>
+            `).join('');
+            
+            if (currentUser.id === 1) {
+                adminUserSelect.innerHTML = '<option value="">Выберите пользователя</option>' + 
+                    allUsers.map(u => `<option value="${u.id}">ID ${u.id} - ${u.full_name} (@${u.username})</option>`).join('');
+            }
+        }
+
+        function selectRecipient(userId) {
+            document.getElementById('recipientSelect').value = userId;
+        }
+
+        async function makeTransfer() {
+            const to_user_id = document.getElementById('recipientSelect').value;
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            
+            if (!to_user_id) {
+                showAlert('Выберите получателя');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showAlert('Введите сумму перевода');
+                return;
+            }
+            
+            const response = await fetch('/api/transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from_user_id: currentUser.id,
+                    to_user_id: parseInt(to_user_id),
+                    amount: amount,
+                    description: `Перевод от ${currentUser.full_name}`
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAlert('Перевод выполнен успешно!', 'success');
+                loadUserData();
+                loadAllUsers();
+                document.getElementById('transferAmount').value = '';
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        async function createNewCard() {
+            const response = await fetch('/api/create-card', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.id })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAlert(`Карта #${data.card_number} создана!`, 'success');
+                loadUserData();
+            } else {
+                showAlert('Ошибка создания карты');
+            }
+        }
+
+        async function takeLoan() {
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            
+            if (!amount || amount <= 0 || amount > 10000) {
+                showAlert('Введите сумму от 1 до 10,000');
+                return;
+            }
+            
+            const response = await fetch('/api/take-loan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.id, amount: amount })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAlert(data.message, 'success');
+                loadUserData();
+                document.getElementById('loanAmount').value = '';
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        async function repayLoan() {
+            const response = await fetch('/api/repay-loan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.id })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAlert(data.message, 'success');
+                loadUserData();
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        async function adminAddMoney() {
+            const user_id = document.getElementById('adminUserSelect').value;
+            const amount = parseFloat(document.getElementById('adminAmount').value);
+            
+            if (!user_id) {
+                showAlert('Выберите пользователя');
+                return;
+            }
+            if (!amount || amount <= 0) {
+                showAlert('Введите сумму');
+                return;
+            }
+            
+            const response = await fetch('/api/admin-add-money', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    admin_id: currentUser.id,
+                    user_id: parseInt(user_id),
+                    amount: amount
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                showAlert(data.message, 'success');
+                loadAllUsers();
+                document.getElementById('adminAmount').value = '';
+            } else {
+                showAlert(data.message);
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('bankSection').style.display = 'none';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+    </script>
+</body>
+</html>
