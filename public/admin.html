@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Администрирование - Национальный Банк</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loader" class="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Национальный Банк Микронации</div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <nav class="top-nav">
+            <div class="nav-container">
+                <a href="/" class="logo-link">
+                    <img src="/logo.png" alt="Национальный Банк" class="logo">
+                </a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link">Главная</a>
+                    <a href="/profile" class="nav-link">Профиль</a>
+                    <a href="/cards" class="nav-link">Карты</a>
+                    <a href="/transfers" class="nav-link">Переводы</a>
+                    <a href="/loans" class="nav-link">Кредиты</a>
+                    <a href="/history" class="nav-link">История</a>
+                    <a href="/admin" class="nav-link active">Администрирование</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-container">
+            <div class="admin-page">
+                <h1>Панель администратора</h1>
+                
+                <div class="admin-section">
+                    <h2>Кредитные заявки</h2>
+                    <div id="loanApplicationsList" class="admin-list"></div>
+                </div>
+                
+                <div class="admin-section">
+                    <h2>Заявки на отмену переводов</h2>
+                    <div id="cancellationRequestsList" class="admin-list"></div>
+                </div>
+                
+                <div class="admin-section">
+                    <h2>Управление пользователями</h2>
+                    <div id="usersList" class="admin-list"></div>
+                </div>
+                
+                <div class="admin-section">
+                    <h2>Начисление средств</h2>
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>ID пользователя</label>
+                            <input type="number" id="adminUserId" placeholder="ID">
+                        </div>
+                        <div class="input-group">
+                            <label>Сумма</label>
+                            <input type="number" id="adminAmount" placeholder="Сумма">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="adminAddMoney()">Начислить</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-links">
+                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
+                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
+                </div>
+                <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="alertMessage" class="alert"></div>
+    <script src="script.js"></script>
+</body>
+</html>

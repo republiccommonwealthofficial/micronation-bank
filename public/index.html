@@ -3,43 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Национальный Банк Микронации | Официальный онлайн-банкинг</title>
+    <title>Национальный Банк Микронации</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="loader" class="loader">
         <div class="loader-spinner"></div>
         <div class="loader-text">Национальный Банк Микронации</div>
-        <div class="loader-sub">Загрузка защищенного соединения...</div>
+        <div class="loader-sub">Установка защищенного соединения...</div>
     </div>
 
     <div id="app" style="display: none;">
-        <!-- Форма авторизации -->
-        <div id="authSection" class="auth-section">
-            <div class="auth-container">
-                <div class="auth-logo">
-                    <div class="logo-icon">🏛️</div>
-                    <h1>НАЦИОНАЛЬНЫЙ БАНК</h1>
-                    <p>Микронации • Официальный онлайн-банкинг</p>
+        <nav class="top-nav">
+            <div class="nav-container">
+                <a href="/" class="logo-link">
+                    <img src="/logo.png" alt="Национальный Банк Микронации" class="logo" id="siteLogo">
+                </a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link active">Главная</a>
+                    <a href="/profile" class="nav-link" id="profileLink" style="display:none">Профиль</a>
+                    <a href="/cards" class="nav-link" id="cardsLink" style="display:none">Карты</a>
+                    <a href="/transfers" class="nav-link" id="transfersLink" style="display:none">Переводы</a>
+                    <a href="/loans" class="nav-link" id="loansLink" style="display:none">Кредиты</a>
+                    <a href="/history" class="nav-link" id="historyLink" style="display:none">История</a>
+                    <a href="/admin" class="nav-link" id="adminLink" style="display:none">Администрирование</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-container">
+            <!-- Главная страница с предложениями -->
+            <div id="homePage" class="page active">
+                <div class="hero-section">
+                    <h1>Национальный Банк Микронации</h1>
+                    <p>Официальный онлайн-банкинг</p>
                 </div>
                 
-                <div id="loginForm" class="auth-form active">
-                    <h2>Авторизация</h2>
-                    <div class="input-group">
-                        <label>Имя пользователя</label>
-                        <input type="text" id="loginUsername" placeholder="Введите логин">
+                <div class="offers-grid">
+                    <div class="offer-card">
+                        <div class="offer-icon">💳</div>
+                        <h3>Бесплатное обслуживание</h3>
+                        <p>Все операции без комиссии для граждан микронации</p>
                     </div>
-                    <div class="input-group">
-                        <label>Пароль</label>
-                        <input type="password" id="loginPassword" placeholder="Введите пароль">
+                    <div class="offer-card">
+                        <div class="offer-icon">🔒</div>
+                        <h3>Защищенные транзакции</h3>
+                        <p>Многоуровневая система безопасности</p>
                     </div>
-                    <button class="btn btn-primary" onclick="login()">Войти в систему</button>
-                    <div class="auth-switch" onclick="showRegister()">Нет учетной записи? Пройти регистрацию</div>
+                    <div class="offer-card">
+                        <div class="offer-icon">📊</div>
+                        <h3>Кредитование</h3>
+                        <p>Льготные ставки для резидентов</p>
+                    </div>
+                    <div class="offer-card">
+                        <div class="offer-icon">🌍</div>
+                        <h3>Международные переводы</h3>
+                        <p>Доступ к мировой финансовой системе</p>
+                    </div>
                 </div>
                 
-                <div id="registerForm" class="auth-form">
-                    <h2>Регистрация</h2>
-                    <div class="form-row">
+                <div class="auth-panel" id="authPanel">
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" onclick="showAuthTab('login')">Вход</button>
+                        <button class="auth-tab" onclick="showAuthTab('register')">Регистрация</button>
+                    </div>
+                    
+                    <div id="loginForm" class="auth-form active">
+                        <div class="input-group">
+                            <label>Имя пользователя</label>
+                            <input type="text" id="loginUsername" placeholder="Введите логин">
+                        </div>
+                        <div class="input-group">
+                            <label>Пароль</label>
+                            <input type="password" id="loginPassword" placeholder="Введите пароль">
+                        </div>
+                        <button class="btn btn-primary" onclick="login()">Войти в систему</button>
+                    </div>
+                    
+                    <div id="registerForm" class="auth-form">
                         <div class="input-group">
                             <label>Имя пользователя</label>
                             <input type="text" id="regUsername" placeholder="минимум 3 символа">
@@ -48,257 +89,69 @@
                             <label>Пароль</label>
                             <input type="password" id="regPassword" placeholder="минимум 6 символов">
                         </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Полное имя (как в паспорте)</label>
-                        <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
-                    </div>
-                    <div class="form-row">
                         <div class="input-group">
-                            <label>Серия паспорта</label>
-                            <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4">
+                            <label>Полное имя</label>
+                            <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
                         </div>
-                        <div class="input-group">
-                            <label>Номер паспорта</label>
-                            <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label>Дата рождения</label>
-                            <input type="date" id="regDateOfBirth">
-                        </div>
-                        <div class="input-group">
-                            <label>Место рождения</label>
-                            <input type="text" id="regPlaceOfBirth" placeholder="Город, страна">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Адрес регистрации</label>
-                        <input type="text" id="regAddress" placeholder="Полный адрес">
-                    </div>
-                    <div class="form-row">
-                        <div class="input-group">
-                            <label>Телефон</label>
-                            <input type="tel" id="regPhone" placeholder="+7 XXX XXX-XX-XX">
-                        </div>
-                        <div class="input-group">
-                            <label>Email</label>
-                            <input type="email" id="regEmail" placeholder="email@example.com">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="register()">Зарегистрироваться</button>
-                    <div class="auth-switch" onclick="showLogin()">Вернуться ко входу</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Основное приложение -->
-        <div id="bankSection" class="bank-section">
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <div class="logo-small">🏛️ НБМ</div>
-                    <div class="user-greeting" id="userGreeting"></div>
-                </div>
-                <nav class="sidebar-nav">
-                    <button class="nav-btn" data-tab="profile">
-                        <span class="nav-icon">👤</span>
-                        <span>Профиль</span>
-                    </button>
-                    <button class="nav-btn" data-tab="cards">
-                        <span class="nav-icon">💳</span>
-                        <span>Мои карты</span>
-                    </button>
-                    <button class="nav-btn" data-tab="transfers">
-                        <span class="nav-icon">💸</span>
-                        <span>Переводы</span>
-                    </button>
-                    <button class="nav-btn" data-tab="loans">
-                        <span class="nav-icon">📊</span>
-                        <span>Кредиты</span>
-                    </button>
-                    <button class="nav-btn" data-tab="history">
-                        <span class="nav-icon">📜</span>
-                        <span>История</span>
-                    </button>
-                    <button class="nav-btn admin-only" data-tab="admin" style="display:none;">
-                        <span class="nav-icon">⚙️</span>
-                        <span>Администрирование</span>
-                    </button>
-                </nav>
-                <div class="sidebar-footer">
-                    <button class="logout-btn" onclick="logout()">Выйти</button>
-                </div>
-            </div>
-            
-            <div class="main-content">
-                <div class="balance-header">
-                    <div class="balance-info">
-                        <div class="balance-label">Текущий баланс</div>
-                        <div class="balance-amount" id="userBalance">0.00</div>
-                        <div class="balance-currency">Кредиты микронации</div>
-                    </div>
-                </div>
-                
-                <!-- Вкладка профиля -->
-                <div id="profileTab" class="tab-content active">
-                    <div class="profile-container">
-                        <div class="profile-header">
-                            <h2>Личная информация</h2>
-                            <div class="client-id">Клиент № <span id="profileId"></span></div>
-                        </div>
-                        <div class="profile-details">
-                            <div class="detail-group">
-                                <div class="detail-label">Полное имя</div>
-                                <div class="detail-value" id="profileFullName"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Паспортные данные</div>
-                                <div class="detail-value" id="profilePassport"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Дата рождения</div>
-                                <div class="detail-value" id="profileBirthDate"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Место рождения</div>
-                                <div class="detail-value" id="profileBirthPlace"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Адрес регистрации</div>
-                                <div class="detail-value" id="profileAddress"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Контактный телефон</div>
-                                <div class="detail-value" id="profilePhone"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Электронная почта</div>
-                                <div class="detail-value" id="profileEmail"></div>
-                            </div>
-                            <div class="detail-group">
-                                <div class="detail-label">Дата регистрации</div>
-                                <div class="detail-value" id="profileCreatedAt"></div>
-                            </div>
-                        </div>
-                        <div class="stats-section">
-                            <h3>Статистика операций</h3>
-                            <div class="stats-grid">
-                                <div class="stat-card">
-                                    <div class="stat-value" id="statTransactions">0</div>
-                                    <div class="stat-label">Всего операций</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-value" id="statRecipients">0</div>
-                                    <div class="stat-label">Получателей</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-value" id="statSent">0</div>
-                                    <div class="stat-label">Отправлено</div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-value" id="statReceived">0</div>
-                                    <div class="stat-label">Получено</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Вкладка карт -->
-                <div id="cardsTab" class="tab-content">
-                    <div class="cards-header">
-                        <h2>Банковские карты</h2>
-                        <button class="btn btn-outline" onclick="createNewCard()">Выпустить новую карту</button>
-                    </div>
-                    <div id="cardsList" class="cards-grid"></div>
-                </div>
-                
-                <!-- Вкладка переводов -->
-                <div id="transfersTab" class="tab-content">
-                    <h2>Перевод средств</h2>
-                    <div class="transfer-form">
-                        <div class="input-group">
-                            <label>Получатель</label>
-                            <select id="recipientSelect">
-                                <option value="">Выберите получателя</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Сумма перевода</label>
-                            <input type="number" id="transferAmount" placeholder="0.00" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label>Назначение платежа</label>
-                            <input type="text" id="transferDescription" placeholder="Необязательно">
-                        </div>
-                        <button class="btn btn-primary" onclick="makeTransfer()">Выполнить перевод</button>
-                    </div>
-                </div>
-                
-                <!-- Вкладка кредитов -->
-                <div id="loansTab" class="tab-content">
-                    <h2>Кредитование</h2>
-                    <div class="loan-info">
-                        <p>Максимальная сумма: <strong>10,000 кредитов</strong></p>
-                        <p>Процентная ставка: <strong>10% годовых</strong></p>
-                        <p>Срок кредитования: <strong>12 месяцев</strong></p>
-                    </div>
-                    <div id="activeLoanInfo" class="loan-status"></div>
-                    <div class="loan-application">
-                        <h3>Подать заявку на кредит</h3>
-                        <div class="input-group">
-                            <label>Сумма кредита</label>
-                            <input type="number" id="loanAmount" placeholder="1 - 10000">
-                        </div>
-                        <div class="input-group">
-                            <label>Цель кредита</label>
-                            <input type="text" id="loanPurpose" placeholder="Укажите цель получения кредита">
-                        </div>
-                        <button class="btn btn-primary" onclick="submitLoanApplication()">Подать заявку</button>
-                    </div>
-                </div>
-                
-                <!-- Вкладка истории -->
-                <div id="historyTab" class="tab-content">
-                    <h2>История операций</h2>
-                    <div id="transactionsList" class="transactions-list"></div>
-                </div>
-                
-                <!-- Вкладка администрирования -->
-                <div id="adminTab" class="tab-content">
-                    <h2>Панель администратора</h2>
-                    <div class="admin-section">
-                        <h3>Кредитные заявки</h3>
-                        <div id="loanApplicationsList"></div>
-                    </div>
-                    <div class="admin-section">
-                        <h3>Начисление средств</h3>
                         <div class="form-row">
                             <div class="input-group">
-                                <label>ID клиента</label>
-                                <input type="number" id="adminUserId" placeholder="ID пользователя">
+                                <label>Серия паспорта</label>
+                                <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4">
                             </div>
                             <div class="input-group">
-                                <label>Сумма</label>
-                                <input type="number" id="adminAmount" placeholder="Сумма начисления">
+                                <label>Номер паспорта</label>
+                                <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8">
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="adminAddMoney()">Начислить средства</button>
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label>Дата рождения</label>
+                                <input type="date" id="regDateOfBirth">
+                            </div>
+                            <div class="input-group">
+                                <label>Место рождения</label>
+                                <input type="text" id="regPlaceOfBirth" placeholder="Город, страна">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Электронная почта</label>
+                            <input type="email" id="regEmail" placeholder="email@example.com">
+                        </div>
+                        <button class="btn btn-primary" onclick="register()">Зарегистрироваться</button>
+                    </div>
+                </div>
+                
+                <div class="welcome-panel" id="welcomePanel" style="display:none">
+                    <div class="welcome-card">
+                        <h2>Добро пожаловать, <span id="welcomeName"></span></h2>
+                        <p>Ваш баланс: <strong id="welcomeBalance">0.00</strong> кредитов</p>
+                        <div class="welcome-actions">
+                            <button class="btn btn-primary" onclick="location.href='/transfers'">Перевести средства</button>
+                            <button class="btn btn-outline" onclick="location.href='/cards'">Мои карты</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
+        </main>
+
         <footer class="footer">
-            <div class="footer-links">
-                <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
-                <button class="footer-btn" onclick="openFAQ()">FAQ</button>
-            </div>
-            <div class="footer-copyright">
-                © 2024 Национальный Банк Микронации. Все права защищены.
+            <div class="footer-container">
+                <div class="footer-links">
+                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
+                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
+                </div>
+                <div class="footer-copyright">
+                    © 2024 Национальный Банк Микронации. Все права защищены.
+                </div>
             </div>
         </footer>
+    </div>
+
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCardModal()">&times;</span>
+            <div id="cardModalContent"></div>
+        </div>
     </div>
 
     <div id="alertMessage" class="alert"></div>

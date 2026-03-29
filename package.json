@@ -1,7 +1,7 @@
 {
   "name": "national-online-bank",
-  "version": "2.0.0",
-  "description": "Национальный онлайн банк микронации",
+  "version": "3.0.0",
+  "description": "Национальный онлайн банк Содружества",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -9,7 +9,11 @@
   "dependencies": {
     "express": "^4.18.2",
     "sqlite3": "^5.1.6",
+    "bcryptjs": "^2.4.3",
+    "express-session": "^1.17.3",
+    "helmet": "^7.0.0",
     "cors": "^2.8.5",
-    "bcryptjs": "^2.4.3"
+    "csurf": "^1.11.0",
+    "express-rate-limit": "^6.10.0"
   }
 }

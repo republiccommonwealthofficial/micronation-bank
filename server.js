@@ -1,314 +1,462 @@
 const express = require('express');
+const session = require('express-session');
+const helmet = require('helmet');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const db = require('./database');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
+const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// Безопасность
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:"],
+        },
+    },
+}));
+
+// CORS настройки
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:3000',
+    credentials: true
+}));
+
+// Rate limiting для защиты от брутфорса
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { success: false, message: 'Слишком много запросов, попробуйте позже' }
+});
+app.use('/api/', limiter);
+
+// Сессии для авторизации
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'micronation_bank_secret_key_2024',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'strict'
+    }
+}));
+
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static('public'));
+
+// Middleware для проверки авторизации
+const requireAuth = (req, res, next) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, message: 'Необходима авторизация' });
+    }
+    next();
+};
+
+const requireAdmin = async (req, res, next) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, message: 'Необходима авторизация' });
+    }
+    
+    db.getUserById(req.session.userId, (err, user) => {
+        if (err || !user || !user.is_admin) {
+            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+        }
+        next();
+    });
+};
 
 // ============= API ЭНДПОИНТЫ =============
 
-// Регистрация с паспортными данными
+// Регистрация
 app.post('/api/register', async (req, res) => {
-  const { username, password, full_name, passport_series, passport_number, 
-          date_of_birth, place_of_birth, address, phone, email } = req.body;
-  
-  if (!username || !password || !full_name || !passport_series || !passport_number ||
-      !date_of_birth || !place_of_birth || !address || !phone || !email) {
-    return res.json({ success: false, message: 'Заполните все поля' });
-  }
-  
-  // Проверка формата паспорта (0000-00000000)
-  const passportPattern = /^\d{4}-\d{8}$/;
-  if (!passportPattern.test(`${passport_series}-${passport_number}`)) {
-    return res.json({ success: false, message: 'Неверный формат паспорта. Используйте: 0000-00000000' });
-  }
-  
-  if (username.length < 3 || password.length < 6) {
-    return res.json({ success: false, message: 'Имя пользователя (мин 3) и пароль (мин 6)' });
-  }
-  
-  db.registerUser({
-    username, password, full_name, passport_series, passport_number,
-    date_of_birth, place_of_birth, address, phone, email
-  }, (err, userId) => {
-    if (err) {
-      if (err.message.includes('UNIQUE')) {
-        res.json({ success: false, message: 'Пользователь уже существует' });
-      } else {
-        res.json({ success: false, message: 'Ошибка регистрации' });
-      }
-      return;
+    const { username, password, full_name, passport_series, passport_number, date_of_birth, place_of_birth, email } = req.body;
+    
+    if (!username || !password || !full_name || !passport_series || !passport_number || !date_of_birth || !place_of_birth || !email) {
+        return res.json({ success: false, message: 'Заполните все поля' });
     }
     
-    db.createInitialCard(userId, full_name, (err) => {
-      if (err) console.error('Ошибка создания карты:', err);
-    });
+    // Проверка email на кириллицу
+    const cyrillicPattern = /[а-яА-ЯЁё]/;
+    if (cyrillicPattern.test(email)) {
+        return res.json({ success: false, message: 'Email не должен содержать кириллицу' });
+    }
     
-    res.json({ success: true, message: 'Регистрация успешна' });
-  });
+    const passportPattern = /^\d{4}-\d{8}$/;
+    if (!passportPattern.test(`${passport_series}-${passport_number}`)) {
+        return res.json({ success: false, message: 'Неверный формат паспорта' });
+    }
+    
+    if (username.length < 3 || password.length < 6) {
+        return res.json({ success: false, message: 'Имя пользователя (мин 3) и пароль (мин 6)' });
+    }
+    
+    db.registerUser({
+        username, password, full_name, passport_series, passport_number,
+        date_of_birth, place_of_birth, email
+    }, (err, userId) => {
+        if (err) {
+            if (err.message.includes('UNIQUE')) {
+                res.json({ success: false, message: 'Пользователь уже существует' });
+            } else {
+                res.json({ success: false, message: 'Ошибка регистрации' });
+            }
+            return;
+        }
+        
+        db.createInitialCard(userId, full_name, () => {});
+        res.json({ success: true, message: 'Регистрация успешна' });
+    });
 });
 
 // Вход
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  
-  db.getUserByUsername(username, (err, user) => {
-    if (err || !user) {
-      return res.json({ success: false, message: 'Неверные учетные данные' });
-    }
+    const { username, password } = req.body;
     
-    const isValid = bcrypt.compareSync(password, user.password);
-    if (!isValid) {
-      return res.json({ success: false, message: 'Неверные учетные данные' });
-    }
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        full_name: user.full_name,
-        balance: user.balance,
-        is_admin: user.is_admin,
-        created_at: user.created_at
-      }
-    });
-  });
-});
-
-// Получить данные пользователя (с картами и кредитами)
-app.get('/api/user/:id', (req, res) => {
-  const userId = parseInt(req.params.id);
-  
-  db.getUserById(userId, (err, user) => {
-    if (err || !user) {
-      return res.json({ success: false });
-    }
-    
-    db.getUserCards(userId, (err, cards) => {
-      db.getActiveLoan(userId, (err, loan) => {
-        db.getUserStats(userId, (err, stats) => {
-          res.json({
+    db.getUserByUsername(username, (err, user) => {
+        if (err || !user) {
+            return res.json({ success: false, message: 'Неверные учетные данные' });
+        }
+        
+        const bcrypt = require('bcryptjs');
+        const isValid = bcrypt.compareSync(password, user.password);
+        
+        if (!isValid) {
+            return res.json({ success: false, message: 'Неверные учетные данные' });
+        }
+        
+        if (user.is_frozen === 1) {
+            return res.json({ success: false, message: 'Ваш аккаунт заморожен. Обратитесь в службу поддержки.' });
+        }
+        
+        req.session.userId = user.id;
+        req.session.isAdmin = user.is_admin === 1;
+        
+        res.json({
             success: true,
-            user,
-            cards: cards || [],
-            activeLoan: loan || null,
-            stats: stats || { unique_recipients: 0, total_transactions: 0, total_sent: 0, total_received: 0 }
-          });
+            user: {
+                id: user.id,
+                username: user.username,
+                full_name: user.full_name,
+                balance: user.balance,
+                is_admin: user.is_admin,
+                is_frozen: user.is_frozen
+            }
         });
-      });
     });
-  });
 });
 
-// Получить список получателей (только те, кому уже отправляли)
-app.get('/api/recipients/:userId', (req, res) => {
-  const userId = parseInt(req.params.userId);
-  
-  db.getUsersForTransfer(userId, (err, recipients) => {
-    if (err) {
-      res.json([]);
+// Выход
+app.post('/api/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ success: true });
+});
+
+// Проверка сессии
+app.get('/api/check-session', (req, res) => {
+    if (req.session.userId) {
+        db.getUserById(req.session.userId, (err, user) => {
+            if (err || !user) {
+                return res.json({ success: false });
+            }
+            res.json({
+                success: true,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    full_name: user.full_name,
+                    is_admin: user.is_admin,
+                    is_frozen: user.is_frozen
+                }
+            });
+        });
     } else {
-      res.json(recipients);
+        res.json({ success: false });
     }
-  });
 });
 
-// Создать новую карту (макс 4)
-app.post('/api/create-card', (req, res) => {
-  const { user_id, full_name } = req.body;
-  
-  db.canCreateCard(user_id, (err, canCreate) => {
-    if (!canCreate) {
-      return res.json({ success: false, message: 'Максимальное количество карт (4) уже выпущено' });
-    }
-    
-    db.createCard(user_id, full_name, (err, cardId) => {
-      if (err) {
-        res.json({ success: false, message: 'Ошибка создания карты' });
-      } else {
-        res.json({ success: true, message: 'Карта успешно выпущена' });
-      }
+// Получить данные пользователя
+app.get('/api/user', requireAuth, (req, res) => {
+    db.getUserById(req.session.userId, (err, user) => {
+        if (err || !user) {
+            return res.json({ success: false });
+        }
+        
+        db.getUserCards(user.id, (err, cards) => {
+            db.getActiveLoan(user.id, (err, loan) => {
+                res.json({
+                    success: true,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        full_name: user.full_name,
+                        balance: user.balance,
+                        passport_series: user.passport_series,
+                        passport_number: user.passport_number,
+                        date_of_birth: user.date_of_birth,
+                        place_of_birth: user.place_of_birth,
+                        email: user.email,
+                        created_at: user.created_at,
+                        is_frozen: user.is_frozen
+                    },
+                    cards: cards || [],
+                    activeLoan: loan || null
+                });
+            });
+        });
     });
-  });
+});
+
+// Получить список получателей
+app.get('/api/recipients', requireAuth, (req, res) => {
+    db.getUsersForTransfer(req.session.userId, (err, recipients) => {
+        res.json(recipients || []);
+    });
+});
+
+// Создать карту
+app.post('/api/create-card', requireAuth, (req, res) => {
+    db.getUserById(req.session.userId, (err, user) => {
+        if (user.is_frozen === 1) {
+            return res.json({ success: false, message: 'Ваш аккаунт заморожен' });
+        }
+        
+        db.canCreateCard(req.session.userId, (err, canCreate) => {
+            if (!canCreate) {
+                return res.json({ success: false, message: 'Максимальное количество карт (4) уже выпущено' });
+            }
+            
+            db.createCard(req.session.userId, user.full_name, (err, cardId) => {
+                if (err) {
+                    res.json({ success: false, message: 'Ошибка создания карты' });
+                } else {
+                    res.json({ success: true, message: 'Карта успешно выпущена' });
+                }
+            });
+        });
+    });
+});
+
+// Блокировка/разблокировка карты
+app.post('/api/toggle-card-block', requireAuth, (req, res) => {
+    const { card_id, action } = req.body; // action: 'block' или 'unblock'
+    
+    db.toggleCardBlock(card_id, action === 'block', (err) => {
+        if (err) {
+            res.json({ success: false, message: 'Ошибка' });
+        } else {
+            res.json({ success: true, message: action === 'block' ? 'Карта заблокирована' : 'Карта разблокирована' });
+        }
+    });
+});
+
+// Получить данные карты
+app.get('/api/card/:card_id', requireAuth, (req, res) => {
+    db.getCardById(req.params.card_id, req.session.userId, (err, card) => {
+        if (err || !card) {
+            res.json({ success: false });
+        } else {
+            res.json({ success: true, card });
+        }
+    });
 });
 
 // Перевод
-app.post('/api/transfer', (req, res) => {
-  const { from_user_id, to_user_id, amount, description } = req.body;
-  
-  if (!to_user_id || !amount || amount <= 0) {
-    return res.json({ success: false, message: 'Укажите получателя и сумму' });
-  }
-  
-  if (from_user_id === to_user_id) {
-    return res.json({ success: false, message: 'Невозможно выполнить перевод самому себе' });
-  }
-  
-  db.transfer(from_user_id, to_user_id, amount, description, (err, result) => {
-    if (err) {
-      res.json({ success: false, message: err.message });
-    } else {
-      res.json({ success: true, message: 'Перевод выполнен успешно' });
-    }
-  });
+app.post('/api/transfer', requireAuth, (req, res) => {
+    const { to_user_id, amount, description } = req.body;
+    
+    db.getUserById(req.session.userId, (err, user) => {
+        if (user.is_frozen === 1) {
+            return res.json({ success: false, message: 'Ваш аккаунт заморожен' });
+        }
+        
+        if (!to_user_id || !amount || amount <= 0) {
+            return res.json({ success: false, message: 'Укажите получателя и сумму' });
+        }
+        
+        if (req.session.userId === to_user_id) {
+            return res.json({ success: false, message: 'Невозможно выполнить перевод самому себе' });
+        }
+        
+        db.transfer(req.session.userId, to_user_id, amount, description, (err, result) => {
+            if (err) {
+                res.json({ success: false, message: err.message });
+            } else {
+                res.json({ success: true, message: 'Перевод выполнен успешно' });
+            }
+        });
+    });
+});
+
+// Создать заявку на отмену транзакции
+app.post('/api/create-cancellation-request', requireAuth, (req, res) => {
+    const { transaction_id, reason } = req.body;
+    
+    db.createCancellationRequest(req.session.userId, transaction_id, reason, (err, requestId) => {
+        if (err) {
+            res.json({ success: false, message: err.message });
+        } else {
+            res.json({ success: true, message: 'Заявка на отмену отправлена' });
+        }
+    });
 });
 
 // Получить историю транзакций
-app.get('/api/transactions/:user_id', (req, res) => {
-  const userId = parseInt(req.params.user_id);
-  
-  db.getUserTransactions(userId, 50, (err, transactions) => {
-    if (err) {
-      res.json([]);
-    } else {
-      res.json(transactions);
-    }
-  });
+app.get('/api/transactions', requireAuth, (req, res) => {
+    const limit = parseInt(req.query.limit) || 50;
+    
+    db.getUserTransactions(req.session.userId, limit, (err, transactions) => {
+        res.json(transactions || []);
+    });
 });
 
-// Создать кредитную заявку
-app.post('/api/loan-application', (req, res) => {
-  const { user_id, amount, purpose } = req.body;
-  
-  if (!amount || amount <= 0 || amount > 10000) {
-    return res.json({ success: false, message: 'Сумма кредита должна быть от 1 до 10,000' });
-  }
-  
-  db.getActiveLoan(user_id, (err, existingLoan) => {
-    if (existingLoan) {
-      return res.json({ success: false, message: 'У вас уже есть активный кредит' });
-    }
+// Кредитные заявки
+app.post('/api/loan-application', requireAuth, (req, res) => {
+    const { amount, purpose } = req.body;
     
-    db.createLoanApplication(user_id, amount, purpose, (err, applicationId) => {
-      if (err) {
-        res.json({ success: false, message: 'Ошибка создания заявки' });
-      } else {
-        res.json({ success: true, message: 'Заявка на кредит отправлена на рассмотрение' });
-      }
+    db.getUserById(req.session.userId, (err, user) => {
+        if (user.is_frozen === 1) {
+            return res.json({ success: false, message: 'Ваш аккаунт заморожен' });
+        }
+        
+        if (!amount || amount <= 0 || amount > 10000) {
+            return res.json({ success: false, message: 'Сумма от 1 до 10,000' });
+        }
+        
+        db.getActiveLoan(req.session.userId, (err, existingLoan) => {
+            if (existingLoan) {
+                return res.json({ success: false, message: 'У вас уже есть активный кредит' });
+            }
+            
+            db.createLoanApplication(req.session.userId, amount, purpose, (err, applicationId) => {
+                if (err) {
+                    res.json({ success: false, message: 'Ошибка создания заявки' });
+                } else {
+                    res.json({ success: true, message: 'Заявка отправлена' });
+                }
+            });
+        });
     });
-  });
-});
-
-// Получить все кредитные заявки (только админ)
-app.get('/api/loan-applications', (req, res) => {
-  const { admin_id } = req.query;
-  
-  db.getUserById(admin_id, (err, admin) => {
-    if (!admin || !admin.is_admin) {
-      return res.json({ success: false, message: 'Доступ запрещен' });
-    }
-    
-    db.getPendingLoanApplications((err, applications) => {
-      res.json(applications);
-    });
-  });
-});
-
-// Одобрить кредит (админ)
-app.post('/api/approve-loan', (req, res) => {
-  const { application_id, admin_id } = req.body;
-  
-  db.getUserById(admin_id, (err, admin) => {
-    if (!admin || !admin.is_admin) {
-      return res.json({ success: false, message: 'Доступ запрещен' });
-    }
-    
-    db.approveLoan(application_id, admin_id, (err, result) => {
-      if (err) {
-        res.json({ success: false, message: err.message });
-      } else {
-        res.json({ success: true, message: 'Кредит одобрен' });
-      }
-    });
-  });
-});
-
-// Отклонить кредит (админ)
-app.post('/api/reject-loan', (req, res) => {
-  const { application_id, admin_id, comment } = req.body;
-  
-  db.getUserById(admin_id, (err, admin) => {
-    if (!admin || !admin.is_admin) {
-      return res.json({ success: false, message: 'Доступ запрещен' });
-    }
-    
-    db.rejectLoan(application_id, admin_id, comment, (err, changes) => {
-      if (err || changes === 0) {
-        res.json({ success: false, message: 'Ошибка отклонения заявки' });
-      } else {
-        res.json({ success: true, message: 'Заявка отклонена' });
-      }
-    });
-  });
 });
 
 // Погасить кредит
-app.post('/api/repay-loan', (req, res) => {
-  const { user_id } = req.body;
-  
-  db.repayLoan(user_id, (err, result) => {
-    if (err) {
-      res.json({ success: false, message: err.message });
-    } else {
-      res.json({ success: true, message: 'Кредит погашен' });
-    }
-  });
-});
-
-// Админ: начислить деньги
-app.post('/api/admin-add-money', (req, res) => {
-  const { admin_id, user_id, amount } = req.body;
-  
-  db.adminAddMoney(admin_id, user_id, amount, (err) => {
-    if (err) {
-      res.json({ success: false, message: err.message });
-    } else {
-      res.json({ success: true, message: 'Средства начислены' });
-    }
-  });
-});
-
-// Админ: заблокировать карту
-app.post('/api/block-card', (req, res) => {
-  const { card_id, admin_id } = req.body;
-  
-  db.blockCard(card_id, admin_id, (err) => {
-    if (err) {
-      res.json({ success: false, message: err.message });
-    } else {
-      res.json({ success: true, message: 'Карта заблокирована' });
-    }
-  });
-});
-
-// Получить всех пользователей (только для админа)
-app.get('/api/users', (req, res) => {
-  const { admin_id } = req.query;
-  
-  db.getUserById(admin_id, (err, admin) => {
-    if (!admin || !admin.is_admin) {
-      return res.json([]);
-    }
-    
-    db.all("SELECT id, username, full_name, balance FROM users", [], (err, users) => {
-      res.json(users);
+app.post('/api/repay-loan', requireAuth, (req, res) => {
+    db.repayLoan(req.session.userId, (err, result) => {
+        if (err) {
+            res.json({ success: false, message: err.message });
+        } else {
+            res.json({ success: true, message: 'Кредит погашен' });
+        }
     });
-  });
+});
+
+// ============= АДМИН ЭНДПОИНТЫ =============
+
+// Получить все кредитные заявки
+app.get('/api/admin/loan-applications', requireAdmin, (req, res) => {
+    db.getPendingLoanApplications((err, applications) => {
+        res.json(applications || []);
+    });
+});
+
+// Получить все заявки на отмену транзакций
+app.get('/api/admin/cancellation-requests', requireAdmin, (req, res) => {
+    db.getPendingCancellationRequests((err, requests) => {
+        res.json(requests || []);
+    });
+});
+
+// Одобрить кредит
+app.post('/api/admin/approve-loan', requireAdmin, (req, res) => {
+    const { application_id } = req.body;
+    
+    db.approveLoan(application_id, req.session.userId, (err, result) => {
+        if (err) {
+            res.json({ success: false, message: err.message });
+        } else {
+            res.json({ success: true, message: 'Кредит одобрен' });
+        }
+    });
+});
+
+// Отклонить кредит
+app.post('/api/admin/reject-loan', requireAdmin, (req, res) => {
+    const { application_id, comment } = req.body;
+    
+    db.rejectLoan(application_id, req.session.userId, comment, (err) => {
+        if (err) {
+            res.json({ success: false, message: 'Ошибка' });
+        } else {
+            res.json({ success: true, message: 'Заявка отклонена' });
+        }
+    });
+});
+
+// Одобрить отмену транзакции
+app.post('/api/admin/approve-cancellation', requireAdmin, (req, res) => {
+    const { request_id } = req.body;
+    
+    db.approveCancellation(request_id, req.session.userId, (err, result) => {
+        if (err) {
+            res.json({ success: false, message: err.message });
+        } else {
+            res.json({ success: true, message: 'Транзакция отменена' });
+        }
+    });
+});
+
+// Отклонить отмену транзакции
+app.post('/api/admin/reject-cancellation', requireAdmin, (req, res) => {
+    const { request_id, comment } = req.body;
+    
+    db.rejectCancellation(request_id, req.session.userId, comment, (err) => {
+        if (err) {
+            res.json({ success: false, message: 'Ошибка' });
+        } else {
+            res.json({ success: true, message: 'Заявка отклонена' });
+        }
+    });
+});
+
+// Заморозить/разморозить аккаунт
+app.post('/api/admin/toggle-user-freeze', requireAdmin, (req, res) => {
+    const { user_id, action } = req.body;
+    
+    db.toggleUserFreeze(user_id, action === 'freeze', (err) => {
+        if (err) {
+            res.json({ success: false, message: 'Ошибка' });
+        } else {
+            res.json({ success: true, message: action === 'freeze' ? 'Аккаунт заморожен' : 'Аккаунт разморожен' });
+        }
+    });
+});
+
+// Получить всех пользователей
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+    db.getAllUsers((err, users) => {
+        res.json(users || []);
+    });
+});
+
+// Начислить деньги
+app.post('/api/admin/add-money', requireAdmin, (req, res) => {
+    const { user_id, amount } = req.body;
+    
+    db.adminAddMoney(req.session.userId, user_id, amount, (err) => {
+        if (err) {
+            res.json({ success: false, message: err.message });
+        } else {
+            res.json({ success: true, message: 'Средства начислены' });
+        }
+    });
 });
 
 app.listen(PORT, () => {
-  console.log(`
-  ╔════════════════════════════════════════════════════╗
-  ║     🏦 НАЦИОНАЛЬНЫЙ ОНЛАЙН БАНК МИКРОНАЦИИ       ║
-  ║     Сервер запущен на порту ${PORT}                  ║
-  ║     http://localhost:${PORT}                        ║
-  ╚════════════════════════════════════════════════════╝
-  `);
+    console.log(`Национальный банк запущен на порту ${PORT}`);
 });
