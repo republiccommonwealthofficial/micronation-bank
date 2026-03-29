@@ -1,7 +1,7 @@
 {
-  "name": "micronation-online-bank",
-  "version": "1.0.0",
-  "description": "Онлайн банк для микронации с регистрацией и транзакциями",
+  "name": "national-online-bank",
+  "version": "2.0.0",
+  "description": "Национальный онлайн банк микронации",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
