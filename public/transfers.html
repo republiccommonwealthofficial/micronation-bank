@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Переводы - Национальный Банк</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div id="loader" class="loader">
@@ -12,101 +12,79 @@
         <div class="loader-text">Национальный Банк Микронации</div>
     </div>
 
-    <div id="app" style="display: none;">
+    <div id="app">
         <nav class="top-nav">
             <div class="nav-container">
                 <a href="/" class="logo-link">
-                    <img src="/logo.png" alt="Национальный Банк" class="logo">
+                    <img src="/logo.png" alt="Логотип" class="logo" onerror="this.style.display='none'">
                 </a>
-                <div class="nav-links">
-                    <a href="/" class="nav-link">Главная</a>
-                    <a href="/profile" class="nav-link">Профиль</a>
-                    <a href="/cards" class="nav-link">Карты</a>
-                    <a href="/transfers" class="nav-link active">Переводы</a>
-                    <a href="/loans" class="nav-link">Кредиты</a>
-                    <a href="/history" class="nav-link">История</a>
-                    <a href="/admin" class="nav-link admin-only">Администрирование</a>
-                </div>
+                <div class="nav-links" id="navLinks"></div>
             </div>
         </nav>
 
         <main class="main-container">
-            <div class="transfers-page">
-                <div class="balance-card-small">
-                    <div class="balance-label">Доступно для перевода</div>
-                    <div class="balance-amount" id="transferBalance">0.00</div>
-                    <div class="balance-currency">кредитов</div>
+            <div class="balance-card-small">
+                <div class="balance-label">Доступно для перевода</div>
+                <div class="balance-amount" id="transferBalance">0.00</div>
+                <div class="balance-currency">кредитов</div>
+            </div>
+            
+            <div class="transfer-form-container">
+                <h2>Новый перевод</h2>
+                <div class="form-group">
+                    <label>Получатель</label>
+                    <select id="recipientSelect">
+                        <option value="">Выберите получателя</option>
+                    </select>
                 </div>
-                
-                <div class="transfer-form-container">
-                    <h2>Новый перевод</h2>
-                    <div class="transfer-form">
-                        <div class="input-group">
-                            <label>Получатель</label>
-                            <select id="recipientSelect">
-                                <option value="">Выберите получателя</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Сумма перевода</label>
-                            <input type="number" id="transferAmount" placeholder="0.00" step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label>Назначение платежа</label>
-                            <input type="text" id="transferDescription" placeholder="Необязательно">
-                        </div>
-                        <button class="btn btn-primary" onclick="makeTransfer()">Выполнить перевод</button>
-                    </div>
+                <div class="form-group">
+                    <label>Сумма</label>
+                    <input type="number" id="transferAmount" placeholder="0.00" step="0.01">
                 </div>
-                
-                <div class="recent-transfers">
-                    <div class="section-header">
-                        <h2>Последние операции</h2>
-                        <button class="btn btn-outline small" onclick="location.href='/history'">Вся история</button>
-                    </div>
-                    <div id="recentTransactionsList" class="transactions-list"></div>
+                <div class="form-group">
+                    <label>Назначение</label>
+                    <input type="text" id="transferDescription" placeholder="Необязательно">
                 </div>
+                <button class="btn btn-primary" id="makeTransferBtn">Выполнить перевод</button>
+            </div>
+            
+            <div class="recent-transfers">
+                <h2>Последние операции</h2>
+                <div id="recentTransactionsList" class="transactions-list"></div>
             </div>
         </main>
 
         <footer class="footer">
-            <div class="footer-container">
-                <div class="footer-links">
-                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
-                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
-                </div>
-                <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
+            <div class="footer-links">
+                <button class="footer-btn" id="supportBtn">Техподдержка</button>
+                <button class="footer-btn" id="faqBtn">FAQ</button>
             </div>
+            <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
         </footer>
     </div>
 
     <div id="cancellationModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeCancellationModal()">&times;</span>
-            <h3>Заявка на отмену перевода</h3>
-            <div id="cancellationForm">
-                <div class="input-group">
-                    <label>Причина отмены</label>
-                    <select id="cancellationReason">
-                        <option value="">Выберите причину</option>
-                        <option value="Ошибочный получатель">Ошибочный получатель</option>
-                        <option value="Неверная сумма">Неверная сумма</option>
-                        <option value="Мошенническая операция">Подозрение на мошенничество</option>
-                        <option value="Дублирование операции">Дублирование операции</option>
-                        <option value="Услуга не оказана">Услуга не оказана</option>
-                        <option value="Иная причина">Иная причина</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Дополнительный комментарий</label>
-                    <textarea id="cancellationComment" rows="3" placeholder="Подробное описание причины..."></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="submitCancellationRequest()">Отправить заявку</button>
+            <span class="modal-close" id="closeCancellationBtn">&times;</span>
+            <h3>Отмена перевода</h3>
+            <div class="form-group">
+                <label>Причина</label>
+                <select id="cancellationReason">
+                    <option value="">Выберите причину</option>
+                    <option value="Ошибочный получатель">Ошибочный получатель</option>
+                    <option value="Неверная сумма">Неверная сумма</option>
+                    <option value="Мошенничество">Мошенничество</option>
+                </select>
             </div>
+            <div class="form-group">
+                <label>Комментарий</label>
+                <textarea id="cancellationComment" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" id="submitCancellationBtn">Отправить</button>
         </div>
     </div>
 
     <div id="alertMessage" class="alert"></div>
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
