@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мои карты - Национальный Банк</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div id="loader" class="loader">
@@ -12,54 +12,41 @@
         <div class="loader-text">Национальный Банк Микронации</div>
     </div>
 
-    <div id="app" style="display: none;">
+    <div id="app">
         <nav class="top-nav">
             <div class="nav-container">
                 <a href="/" class="logo-link">
-                    <img src="/logo.png" alt="Национальный Банк" class="logo">
+                    <img src="/logo.png" alt="Логотип" class="logo" onerror="this.style.display='none'">
                 </a>
-                <div class="nav-links">
-                    <a href="/" class="nav-link">Главная</a>
-                    <a href="/profile" class="nav-link">Профиль</a>
-                    <a href="/cards" class="nav-link active">Карты</a>
-                    <a href="/transfers" class="nav-link">Переводы</a>
-                    <a href="/loans" class="nav-link">Кредиты</a>
-                    <a href="/history" class="nav-link">История</a>
-                    <a href="/admin" class="nav-link admin-only">Администрирование</a>
-                </div>
+                <div class="nav-links" id="navLinks"></div>
             </div>
         </nav>
 
         <main class="main-container">
-            <div class="cards-page">
-                <div class="page-header">
-                    <h1>Банковские карты</h1>
-                    <button class="btn btn-primary" onclick="createNewCard()">Выпустить новую карту</button>
-                </div>
-                
-                <div class="cards-grid" id="cardsGrid"></div>
+            <div class="cards-header">
+                <h1>Банковские карты</h1>
+                <button class="btn btn-primary" id="createCardBtn">Выпустить новую карту</button>
             </div>
+            <div id="cardsList" class="cards-grid"></div>
         </main>
 
         <footer class="footer">
-            <div class="footer-container">
-                <div class="footer-links">
-                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
-                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
-                </div>
-                <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
+            <div class="footer-links">
+                <button class="footer-btn" id="supportBtn">Техподдержка</button>
+                <button class="footer-btn" id="faqBtn">FAQ</button>
             </div>
+            <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
         </footer>
     </div>
 
     <div id="cardModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeCardModal()">&times;</span>
+            <span class="modal-close" id="closeModalBtn">&times;</span>
             <div id="cardModalContent"></div>
         </div>
     </div>
 
     <div id="alertMessage" class="alert"></div>
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
