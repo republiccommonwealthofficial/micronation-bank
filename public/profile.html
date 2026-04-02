@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль - Национальный Банк</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div id="loader" class="loader">
@@ -12,83 +12,50 @@
         <div class="loader-text">Национальный Банк Микронации</div>
     </div>
 
-    <div id="app" style="display: none;">
+    <div id="app">
         <nav class="top-nav">
             <div class="nav-container">
                 <a href="/" class="logo-link">
-                    <img src="/logo.png" alt="Национальный Банк" class="logo">
+                    <img src="/logo.png" alt="Логотип" class="logo" onerror="this.style.display='none'">
                 </a>
-                <div class="nav-links">
-                    <a href="/" class="nav-link">Главная</a>
-                    <a href="/profile" class="nav-link active">Профиль</a>
-                    <a href="/cards" class="nav-link">Карты</a>
-                    <a href="/transfers" class="nav-link">Переводы</a>
-                    <a href="/loans" class="nav-link">Кредиты</a>
-                    <a href="/history" class="nav-link">История</a>
-                    <a href="/admin" class="nav-link admin-only">Администрирование</a>
-                </div>
+                <div class="nav-links" id="navLinks"></div>
             </div>
         </nav>
 
         <main class="main-container">
-            <div class="profile-page">
+            <div class="profile-container">
                 <div class="profile-header">
                     <h1>Личный кабинет</h1>
-                    <div class="client-badge">Клиент № <span id="userId"></span></div>
+                    <div class="client-id">Клиент № <span id="userId"></span></div>
                 </div>
-                
                 <div class="profile-content">
-                    <div class="profile-info">
-                        <div class="info-section">
-                            <h3>Персональные данные</h3>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">Полное имя</span>
-                                    <span class="info-value" id="fullName"></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Паспорт</span>
-                                    <span class="info-value" id="passport"></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Дата рождения</span>
-                                    <span class="info-value" id="birthDate"></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Место рождения</span>
-                                    <span class="info-value" id="birthPlace"></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Электронная почта</span>
-                                    <span class="info-value" id="email"></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Дата регистрации</span>
-                                    <span class="info-value" id="createdAt"></span>
-                                </div>
-                            </div>
+                    <div class="info-section">
+                        <h3>Персональные данные</h3>
+                        <div class="info-grid">
+                            <div class="info-item"><span class="info-label">Полное имя</span><span class="info-value" id="fullName"></span></div>
+                            <div class="info-item"><span class="info-label">Паспорт</span><span class="info-value" id="passport"></span></div>
+                            <div class="info-item"><span class="info-label">Дата рождения</span><span class="info-value" id="birthDate"></span></div>
+                            <div class="info-item"><span class="info-label">Email</span><span class="info-value" id="email"></span></div>
+                            <div class="info-item"><span class="info-label">Дата регистрации</span><span class="info-value" id="createdAt"></span></div>
                         </div>
                     </div>
-                    
                     <div class="account-actions">
-                        <button class="btn btn-danger" onclick="logout()">Выйти из аккаунта</button>
+                        <button class="btn btn-danger" id="logoutBtn">Выйти из аккаунта</button>
                     </div>
                 </div>
             </div>
         </main>
 
         <footer class="footer">
-            <div class="footer-container">
-                <div class="footer-links">
-                    <button class="footer-btn" onclick="openSupport()">Техническая поддержка</button>
-                    <button class="footer-btn" onclick="openFAQ()">FAQ</button>
-                </div>
-                <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
+            <div class="footer-links">
+                <button class="footer-btn" id="supportBtn">Техподдержка</button>
+                <button class="footer-btn" id="faqBtn">FAQ</button>
             </div>
+            <div class="footer-copyright">© 2024 Национальный Банк Микронации</div>
         </footer>
     </div>
 
     <div id="alertMessage" class="alert"></div>
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
