@@ -20,19 +20,18 @@
                     <img src="/logo.png" alt="Национальный Банк Микронации" class="logo" id="siteLogo" onerror="this.style.display='none'">
                 </a>
                 <div class="nav-links" id="navLinks">
-                    <a href="/" class="nav-link active" data-page="home">Главная</a>
-                    <a href="/profile.html" class="nav-link" data-page="profile" style="display:none">Профиль</a>
-                    <a href="/cards.html" class="nav-link" data-page="cards" style="display:none">Карты</a>
-                    <a href="/transfers.html" class="nav-link" data-page="transfers" style="display:none">Переводы</a>
-                    <a href="/loans.html" class="nav-link" data-page="loans" style="display:none">Кредиты</a>
-                    <a href="/history.html" class="nav-link" data-page="history" style="display:none">История</a>
-                    <a href="/admin.html" class="nav-link" data-page="admin" style="display:none">Администрирование</a>
+                    <a href="/" class="nav-link active">Главная</a>
+                    <a href="/profile.html" class="nav-link" style="display:none">Профиль</a>
+                    <a href="/cards.html" class="nav-link" style="display:none">Карты</a>
+                    <a href="/transfers.html" class="nav-link" style="display:none">Переводы</a>
+                    <a href="/loans.html" class="nav-link" style="display:none">Кредиты</a>
+                    <a href="/history.html" class="nav-link" style="display:none">История</a>
+                    <a href="/admin.html" class="nav-link" style="display:none">Администрирование</a>
                 </div>
             </div>
         </nav>
 
         <main class="main-container">
-            <!-- Главная страница с предложениями -->
             <div id="homePage" class="page active">
                 <div class="hero-section">
                     <h1>Национальный Банк Микронации</h1>
@@ -62,120 +61,117 @@
                     </div>
                 </div>
                 
-                <!-- ОКНО ВХОДА/РЕГИСТРАЦИИ (БЕЗ СМАЙЛИКОВ) -->
+                <!-- Панель авторизации -->
                 <div id="authPanel" class="auth-panel">
                     <div class="auth-card">
                         <div class="auth-header">
-                            <button class="auth-tab-btn active" data-auth-tab="login">Вход в систему</button>
-                            <button class="auth-tab-btn" data-auth-tab="register">Регистрация</button>
+                            <button class="auth-tab-btn active" data-tab="login">Вход в систему</button>
+                            <button class="auth-tab-btn" data-tab="register">Регистрация</button>
                         </div>
                         
                         <!-- Форма входа -->
                         <div id="loginFormContainer" class="auth-form-container active">
-                            <form id="loginFormElement" onsubmit="event.preventDefault(); window.login();">
-                                <div class="form-group">
-                                    <label for="loginUsername">Имя пользователя</label>
-                                    <div class="input-wrapper">
-                                        <input type="text" id="loginUsername" placeholder="Введите ваш логин" autocomplete="username">
-                                    </div>
+                            <div class="form-group">
+                                <label for="loginUsername">Имя пользователя</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="loginUsername" placeholder="Введите ваш логин">
                                 </div>
-                                
-                                <div class="form-group">
-                                    <label for="loginPassword">Пароль</label>
-                                    <div class="input-wrapper">
-                                        <input type="password" id="loginPassword" placeholder="Введите пароль" autocomplete="current-password">
-                                        <button type="button" class="password-toggle" onclick="window.togglePassword('loginPassword')">👁</button>
-                                    </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="loginPassword">Пароль</label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="loginPassword" placeholder="Введите пароль">
+                                    <button type="button" class="password-toggle" id="toggleLoginPassword">👁</button>
                                 </div>
-                                
-                                <div class="form-options">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="rememberMe"> Запомнить меня
-                                    </label>
-                                    <a href="#" class="forgot-link" onclick="window.showAlert('Функция восстановления пароля будет доступна в ближайшее время. Обратитесь в службу поддержки.', 'info'); return false;">Забыли пароль?</a>
-                                </div>
-                                
-                                <button type="submit" class="auth-submit-btn">Войти в систему</button>
-                                
-                                <div class="auth-footer">
-                                    <p>Нет учетной записи? <a href="#" onclick="window.switchAuthTab('register'); return false;">Зарегистрироваться</a></p>
-                                </div>
-                            </form>
+                            </div>
+                            
+                            <div class="form-options">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="rememberMe"> Запомнить меня
+                                </label>
+                                <a href="#" id="forgotPasswordLink">Забыли пароль?</a>
+                            </div>
+                            
+                            <button class="auth-submit-btn" id="loginBtn">Войти в систему</button>
+                            
+                            <div class="auth-footer">
+                                <p>Нет учетной записи? <a href="#" id="showRegisterLink">Зарегистрироваться</a></p>
+                            </div>
                         </div>
                         
-                        <!-- Форма регистрации (БЕЗ СМАЙЛИКОВ И БЕЗ МЕСТА РОЖДЕНИЯ) -->
+                        <!-- Форма регистрации -->
                         <div id="registerFormContainer" class="auth-form-container">
-                            <form id="registerFormElement" onsubmit="event.preventDefault(); window.register();">
-                                <div class="form-row-2">
-                                    <div class="form-group">
-                                        <label for="regUsername">Имя пользователя *</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="regUsername" placeholder="минимум 3 символа">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="regPassword">Пароль *</label>
-                                        <div class="input-wrapper">
-                                            <input type="password" id="regPassword" placeholder="минимум 6 символов">
-                                            <button type="button" class="password-toggle" onclick="window.togglePassword('regPassword')">👁</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
+                            <div class="form-row-2">
                                 <div class="form-group">
-                                    <label for="regFullName">Полное имя (как в паспорте) *</label>
+                                    <label for="regUsername">Имя пользователя *</label>
                                     <div class="input-wrapper">
-                                        <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
+                                        <input type="text" id="regUsername" placeholder="минимум 3 символа">
                                     </div>
                                 </div>
-                                
-                                <div class="form-row-2">
-                                    <div class="form-group">
-                                        <label for="regPassportSeries">Серия паспорта *</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4" pattern="\d{4}">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="regPassportNumber">Номер паспорта *</label>
-                                        <div class="input-wrapper">
-                                            <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8" pattern="\d{8}">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-row-2">
-                                    <div class="form-group">
-                                        <label for="regDateOfBirth">Дата рождения *</label>
-                                        <div class="input-wrapper">
-                                            <input type="date" id="regDateOfBirth">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="regEmail">Электронная почта *</label>
-                                        <div class="input-wrapper">
-                                            <input type="email" id="regEmail" placeholder="example@domain.com">
-                                        </div>
-                                    </div>
-                                </div>
-                                
                                 <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="agreeTerms"> Я принимаю условия 
-                                        <a href="#" onclick="window.showAlert('Пользовательское соглашение будет доступно в ближайшее время', 'info'); return false;">пользовательского соглашения</a>
-                                    </label>
+                                    <label for="regPassword">Пароль *</label>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="regPassword" placeholder="минимум 6 символов">
+                                        <button type="button" class="password-toggle" id="toggleRegPassword">👁</button>
+                                    </div>
                                 </div>
-                                
-                                <button type="submit" class="auth-submit-btn">Зарегистрироваться</button>
-                                
-                                <div class="auth-footer">
-                                    <p>Уже есть аккаунт? <a href="#" onclick="window.switchAuthTab('login'); return false;">Войти в систему</a></p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="regFullName">Полное имя (как в паспорте) *</label>
+                                <div class="input-wrapper">
+                                    <input type="text" id="regFullName" placeholder="Иванов Иван Иванович">
                                 </div>
-                            </form>
+                            </div>
+                            
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="regPassportSeries">Серия паспорта *</label>
+                                    <div class="input-wrapper">
+                                        <input type="text" id="regPassportSeries" placeholder="0000" maxlength="4">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="regPassportNumber">Номер паспорта *</label>
+                                    <div class="input-wrapper">
+                                        <input type="text" id="regPassportNumber" placeholder="00000000" maxlength="8">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="regDateOfBirth">Дата рождения *</label>
+                                    <div class="input-wrapper">
+                                        <input type="date" id="regDateOfBirth">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="regEmail">Электронная почта *</label>
+                                    <div class="input-wrapper">
+                                        <input type="email" id="regEmail" placeholder="example@domain.com">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeTerms"> Я принимаю условия 
+                                    <a href="#" id="termsLink">пользовательского соглашения</a>
+                                </label>
+                            </div>
+                            
+                            <button class="auth-submit-btn" id="registerBtn">Зарегистрироваться</button>
+                            
+                            <div class="auth-footer">
+                                <p>Уже есть аккаунт? <a href="#" id="showLoginLink">Войти в систему</a></p>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
+                <!-- Панель приветствия -->
                 <div id="welcomePanel" class="welcome-panel" style="display:none">
                     <div class="welcome-card">
                         <div class="welcome-icon">🏛</div>
@@ -186,9 +182,9 @@
                             <span class="currency">кредитов</span>
                         </div>
                         <div class="welcome-actions">
-                            <button class="btn btn-primary" onclick="window.navigateTo('/transfers.html')">Перевести средства</button>
-                            <button class="btn btn-outline" onclick="window.navigateTo('/cards.html')">Мои карты</button>
-                            <button class="btn btn-outline" onclick="window.navigateTo('/profile.html')">Личный кабинет</button>
+                            <button class="btn btn-primary" id="transferBtn">Перевести средства</button>
+                            <button class="btn btn-outline" id="myCardsBtn">Мои карты</button>
+                            <button class="btn btn-outline" id="profileBtn">Личный кабинет</button>
                         </div>
                     </div>
                 </div>
@@ -198,8 +194,8 @@
         <footer class="footer">
             <div class="footer-container">
                 <div class="footer-links">
-                    <button class="footer-btn" onclick="window.openSupport()">Техническая поддержка</button>
-                    <button class="footer-btn" onclick="window.openFAQ()">FAQ</button>
+                    <button class="footer-btn" id="supportBtn">Техническая поддержка</button>
+                    <button class="footer-btn" id="faqBtn">FAQ</button>
                 </div>
                 <div class="footer-copyright">
                     © 2024 Национальный Банк Микронации. Все права защищены.
@@ -210,6 +206,388 @@
 
     <div id="alertMessage" class="alert"></div>
     
-    <script src="script.js"></script>
+    <script>
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let currentUser = null;
+        
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            if (alertDiv) {
+                alertDiv.textContent = message;
+                alertDiv.className = `alert ${type}`;
+                alertDiv.style.display = 'block';
+                setTimeout(() => {
+                    alertDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+        
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+            }
+        }
+        
+        // ==================== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ====================
+        function switchToLoginTab() {
+            const loginContainer = document.getElementById('loginFormContainer');
+            const registerContainer = document.getElementById('registerFormContainer');
+            const tabs = document.querySelectorAll('.auth-tab-btn');
+            
+            if (loginContainer) loginContainer.classList.add('active');
+            if (registerContainer) registerContainer.classList.remove('active');
+            if (tabs[0]) tabs[0].classList.add('active');
+            if (tabs[1]) tabs[1].classList.remove('active');
+        }
+        
+        function switchToRegisterTab() {
+            const loginContainer = document.getElementById('loginFormContainer');
+            const registerContainer = document.getElementById('registerFormContainer');
+            const tabs = document.querySelectorAll('.auth-tab-btn');
+            
+            if (loginContainer) loginContainer.classList.remove('active');
+            if (registerContainer) registerContainer.classList.add('active');
+            if (tabs[0]) tabs[0].classList.remove('active');
+            if (tabs[1]) tabs[1].classList.add('active');
+        }
+        
+        // ==================== ПОКАЗ ПАНЕЛЕЙ ====================
+        function showAuthPanel() {
+            const authPanel = document.getElementById('authPanel');
+            const welcomePanel = document.getElementById('welcomePanel');
+            
+            if (authPanel) authPanel.style.display = 'block';
+            if (welcomePanel) welcomePanel.style.display = 'none';
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === '/' || href === '/index.html') {
+                    link.style.display = 'inline-block';
+                } else {
+                    link.style.display = 'none';
+                }
+            });
+        }
+        
+        async function showWelcomePanel() {
+            const authPanel = document.getElementById('authPanel');
+            const welcomePanel = document.getElementById('welcomePanel');
+            
+            if (authPanel) authPanel.style.display = 'none';
+            if (welcomePanel) welcomePanel.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (data.success) {
+                    const welcomeBalance = document.getElementById('welcomeBalance');
+                    const welcomeName = document.getElementById('welcomeName');
+                    if (welcomeBalance) welcomeBalance.textContent = data.user.balance.toFixed(2);
+                    if (welcomeName) welcomeName.textContent = data.user.full_name.split(' ')[0];
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '/' && href !== '/index.html') {
+                    link.style.display = 'inline-block';
+                }
+            });
+            
+            if (currentUser && currentUser.is_admin) {
+                const adminLink = document.querySelector('.nav-link[href="/admin.html"]');
+                if (adminLink) adminLink.style.display = 'inline-block';
+            }
+        }
+        
+        // ==================== РЕГИСТРАЦИЯ ====================
+        async function register() {
+            console.log('Регистрация начата');
+            
+            const username = document.getElementById('regUsername')?.value.trim();
+            const password = document.getElementById('regPassword')?.value;
+            const full_name = document.getElementById('regFullName')?.value.trim();
+            const passport_series = document.getElementById('regPassportSeries')?.value.trim();
+            const passport_number = document.getElementById('regPassportNumber')?.value.trim();
+            const date_of_birth = document.getElementById('regDateOfBirth')?.value;
+            const email = document.getElementById('regEmail')?.value.trim();
+            const agreeTerms = document.getElementById('agreeTerms')?.checked;
+            
+            if (!agreeTerms) {
+                showAlert('Необходимо принять условия пользовательского соглашения');
+                return;
+            }
+            
+            if (!username || !password || !full_name || !passport_series || !passport_number || !date_of_birth || !email) {
+                showAlert('Заполните все поля');
+                return;
+            }
+            
+            if (username.length < 3) {
+                showAlert('Имя пользователя должно быть минимум 3 символа');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAlert('Пароль должен быть минимум 6 символов');
+                return;
+            }
+            
+            if (passport_series.length !== 4 || passport_number.length !== 8) {
+                showAlert('Неверный формат паспорта. Используйте: серия 4 цифры, номер 8 цифр');
+                return;
+            }
+            
+            if (/[а-яА-ЯЁё]/.test(email)) {
+                showAlert('Email не должен содержать кириллицу');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username, password, full_name, passport_series, passport_number,
+                        date_of_birth, place_of_birth: 'Столица', email
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Регистрация успешна! Теперь войдите в систему.', 'success');
+                    
+                    document.getElementById('regUsername').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regFullName').value = '';
+                    document.getElementById('regPassportSeries').value = '';
+                    document.getElementById('regPassportNumber').value = '';
+                    document.getElementById('regDateOfBirth').value = '';
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('agreeTerms').checked = false;
+                    
+                    document.getElementById('loginUsername').value = username;
+                    document.getElementById('loginPassword').value = '';
+                    
+                    switchToLoginTab();
+                } else {
+                    showAlert(result.message || 'Ошибка регистрации');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showAlert('Ошибка соединения с сервером');
+            }
+        }
+        
+        // ==================== ВХОД ====================
+        async function login() {
+            console.log('Вход начат');
+            
+            const username = document.getElementById('loginUsername')?.value.trim();
+            const password = document.getElementById('loginPassword')?.value;
+            
+            if (!username || !password) {
+                showAlert('Введите имя пользователя и пароль');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser = data.user;
+                    showAlert('Вход выполнен успешно!', 'success');
+                    await showWelcomePanel();
+                } else {
+                    showAlert(data.message || 'Неверный логин или пароль');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('Ошибка соединения с сервером');
+            }
+        }
+        
+        // ==================== ПРОВЕРКА СЕССИИ ====================
+        async function checkSession() {
+            console.log('Проверка сессии...');
+            try {
+                const response = await fetch('/api/check-session');
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('Пользователь авторизован');
+                    currentUser = data.user;
+                    await showWelcomePanel();
+                } else {
+                    console.log('Пользователь не авторизован');
+                    showAuthPanel();
+                }
+            } catch (error) {
+                console.error('Session check error:', error);
+                showAuthPanel();
+            }
+        }
+        
+        // ==================== ВЫХОД ====================
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                currentUser = null;
+                showAuthPanel();
+                showAlert('Вы вышли из системы', 'success');
+            } catch (error) {
+                showAlert('Ошибка выхода');
+            }
+        }
+        
+        // ==================== ПОДДЕРЖКА И FAQ ====================
+        function openSupport() {
+            window.location.href = 'mailto:republiccommfinance@gmail.com?subject=Запрос в техническую поддержку';
+        }
+        
+        function openFAQ() {
+            showAlert('Для получения справки обратитесь в службу поддержки', 'info');
+        }
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен');
+            
+            // Скрываем лоадер
+            setTimeout(function() {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(function() {
+                        loader.style.display = 'none';
+                        const app = document.getElementById('app');
+                        if (app) app.style.display = 'block';
+                    }, 300);
+                }
+            }, 500);
+            
+            // Проверяем сессию
+            setTimeout(function() {
+                checkSession();
+            }, 600);
+            
+            // ==================== НАЗНАЧАЕМ ОБРАБОТЧИКИ ====================
+            
+            // Кнопки входа и регистрации
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            if (loginBtn) {
+                loginBtn.onclick = function(e) {
+                    e.preventDefault();
+                    login();
+                };
+            }
+            
+            if (registerBtn) {
+                registerBtn.onclick = function(e) {
+                    e.preventDefault();
+                    register();
+                };
+            }
+            
+            // Переключение вкладок
+            const showRegisterLink = document.getElementById('showRegisterLink');
+            const showLoginLink = document.getElementById('showLoginLink');
+            const authTabs = document.querySelectorAll('.auth-tab-btn');
+            
+            if (showRegisterLink) {
+                showRegisterLink.onclick = function(e) {
+                    e.preventDefault();
+                    switchToRegisterTab();
+                };
+            }
+            
+            if (showLoginLink) {
+                showLoginLink.onclick = function(e) {
+                    e.preventDefault();
+                    switchToLoginTab();
+                };
+            }
+            
+            if (authTabs.length >= 2) {
+                authTabs[0].onclick = function() { switchToLoginTab(); };
+                authTabs[1].onclick = function() { switchToRegisterTab(); };
+            }
+            
+            // Показать/скрыть пароль
+            const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+            const toggleRegPassword = document.getElementById('toggleRegPassword');
+            
+            if (toggleLoginPassword) {
+                toggleLoginPassword.onclick = function() { togglePassword('loginPassword'); };
+            }
+            
+            if (toggleRegPassword) {
+                toggleRegPassword.onclick = function() { togglePassword('regPassword'); };
+            }
+            
+            // Кнопки навигации
+            const transferBtn = document.getElementById('transferBtn');
+            const myCardsBtn = document.getElementById('myCardsBtn');
+            const profileBtn = document.getElementById('profileBtn');
+            
+            if (transferBtn) transferBtn.onclick = function() { navigateTo('/transfers.html'); };
+            if (myCardsBtn) myCardsBtn.onclick = function() { navigateTo('/cards.html'); };
+            if (profileBtn) profileBtn.onclick = function() { navigateTo('/profile.html'); };
+            
+            // Кнопки футера
+            const supportBtn = document.getElementById('supportBtn');
+            const faqBtn = document.getElementById('faqBtn');
+            const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+            const termsLink = document.getElementById('termsLink');
+            
+            if (supportBtn) supportBtn.onclick = openSupport;
+            if (faqBtn) faqBtn.onclick = openFAQ;
+            if (forgotPasswordLink) {
+                forgotPasswordLink.onclick = function(e) {
+                    e.preventDefault();
+                    showAlert('Функция восстановления пароля будет доступна в ближайшее время. Обратитесь в службу поддержки.', 'info');
+                };
+            }
+            if (termsLink) {
+                termsLink.onclick = function(e) {
+                    e.preventDefault();
+                    showAlert('Пользовательское соглашение будет доступно в ближайшее время', 'info');
+                };
+            }
+            
+            // Навигационные ссылки в меню
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.onclick = function(e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                };
+            });
+            
+            console.log('Все обработчики назначены');
+        });
+    </script>
 </body>
 </html>
